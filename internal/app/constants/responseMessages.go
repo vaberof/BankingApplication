@@ -20,7 +20,7 @@ const (
 	TransfersNotFound     = "transfers not found"
 	DepositsNotFound      = "deposits not found"
 
-	SenderIsRecipient = "you are trying to make a transfer to your own account"
+	SenderIsPayee     = "you are trying to make a transfer to your own account"
 	InsufficientFunds = "insufficient funds"
 
 	UnsupportedTransferType   = "unsupported transfer type"

@@ -24,22 +24,22 @@ func MakeTransfer(data map[string]string, claims *jwt.RegisteredClaims) error {
 }
 
 func PersonalTransfer(data map[string]string, claims *jwt.RegisteredClaims) error {
-	sentFromAccountID := data["from_account"]
-	sentToAccountID := data["to_account"]
+	senderAccountID := data["from_account"]
+	payeeAccountID := data["to_account"]
 	amount := data["amount"]
 
-	senderAccount, senderDbObject, err := getSenderAccount(claims, sentFromAccountID)
+	senderAccount, senderDbObject, err := getSenderAccount(claims, senderAccountID)
 	if err != nil {
 		return err
 	}
 
-	payeeAccount, payeeDbObject, err := getPersonalPayeeAccount(claims, sentToAccountID)
+	payeeAccount, payeeDbObject, err := getPersonalPayeeAccount(claims, payeeAccountID)
 	if err != nil {
 		return err
 	}
 
 	if isTheSameAccountID(senderAccount.ID, payeeAccount.ID) {
-		customError := errors.New(constants.SenderIsRecipient)
+		customError := errors.New(constants.SenderIsPayee)
 		return customError
 	}
 
@@ -56,29 +56,29 @@ func PersonalTransfer(data map[string]string, claims *jwt.RegisteredClaims) erro
 	newSenderBalance := senderAccount.Balance - intAmount
 	senderDbObject.Update("balance", newSenderBalance)
 
-	newRecipientBalance := payeeAccount.Balance + intAmount
-	payeeDbObject.Update("balance", newRecipientBalance)
+	newPayeeBalance := payeeAccount.Balance + intAmount
+	payeeDbObject.Update("balance", newPayeeBalance)
 
 	return nil
 }
 
 func ClientTransfer(data map[string]string, claims *jwt.RegisteredClaims) error {
-	sentFromAccountID := data["from_account"]
-	sentToAccountID := data["to_account"]
+	senderAccountID := data["from_account"]
+	payeeAccountID := data["to_account"]
 	amount := data["amount"]
 
-	senderAccount, senderDbObject, err := getSenderAccount(claims, sentFromAccountID)
+	senderAccount, senderDbObject, err := getSenderAccount(claims, senderAccountID)
 	if err != nil {
 		return err
 	}
 
-	payeeAccount, payeeDbObject, err := getClientPayeeAccount(sentToAccountID)
+	payeeAccount, payeeDbObject, err := getClientPayeeAccount(payeeAccountID)
 	if err != nil {
 		return err
 	}
 
 	if isTheSameAccountOwner(senderAccount.UserID, payeeAccount.UserID) {
-		customError := errors.New(constants.SenderIsRecipient)
+		customError := errors.New(constants.SenderIsPayee)
 		return customError
 	}
 
@@ -95,8 +95,8 @@ func ClientTransfer(data map[string]string, claims *jwt.RegisteredClaims) error 
 	newSenderBalance := senderAccount.Balance - intAmount
 	senderDbObject.Update("balance", newSenderBalance)
 
-	newRecipientBalance := payeeAccount.Balance + intAmount
-	payeeDbObject.Update("balance", newRecipientBalance)
+	newPayeeBalance := payeeAccount.Balance + intAmount
+	payeeDbObject.Update("balance", newPayeeBalance)
 
 	return nil
 }
@@ -209,12 +209,12 @@ func getClientPayeeAccount(accountID string) (*model.Account, *gorm.DB, error) {
 	return account, accountDbObject, nil
 }
 
-func isTheSameAccountID(senderAccountID, recipientAccountID uint) bool {
-	return senderAccountID == recipientAccountID
+func isTheSameAccountID(senderAccountID, payeeAccountID uint) bool {
+	return senderAccountID == payeeAccountID
 }
 
-func isTheSameAccountOwner(senderUserID, recipientUserID uint) bool {
-	return senderUserID == recipientUserID
+func isTheSameAccountOwner(senderUserID, payeeAccountID uint) bool {
+	return senderUserID == payeeAccountID
 }
 
 func isEnoughFunds(account *model.Account, amount int) bool {
