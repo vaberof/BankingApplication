@@ -3,7 +3,6 @@ package controllers
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/vaberof/banking_app/internal/app/constants"
-	"github.com/vaberof/banking_app/internal/app/model"
 	"github.com/vaberof/banking_app/internal/app/service"
 )
 
@@ -29,17 +28,10 @@ func Register(c *fiber.Ctx) error {
 	hashedPassword := service.HashPassword(inputPassword)
 
 	user := service.CreateUser(inputUsername, hashedPassword)
-
 	service.CreateUserInDatabase(user)
 
-	userAccount := model.NewAccount()
-
-	userAccount.SetUserID(user.ID)
-	userAccount.SetOwner(user.Username)
-	userAccount.SetMainAccountType()
-	userAccount.SetInitialBalance()
-
-	service.CreateAccountInDatabase(userAccount)
+	userInitialAccount := service.CreateInitialAccount(user.ID, user.Username)
+	service.CreateAccountInDatabase(userInitialAccount)
 
 	c.Status(fiber.StatusOK)
 	return c.JSON(fiber.Map{

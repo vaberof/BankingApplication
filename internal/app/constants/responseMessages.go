@@ -8,11 +8,14 @@ const (
 	Unauthorized                   = "user unauthorized"
 	IncorrectUsernameAndOrPassword = "incorrect username and/or password"
 
-	FailedLogin    = "could not login"
-	FailedTransfer = "transaction is not possible"
+	FailedLogin                       = "could not login"
+	FailedTransfer                    = "transaction is not possible"
+	FailedDeleteMainAccount           = "cannot delete main account"
+	FailedDeleteNonZeroBalanceAccount = "cannot delete account, because there are funds on it"
 
 	SenderAccountNotFound = "sender's account not found"
 	PayeeAccountNotFound  = "payee's account not found"
+	AccountNotFound       = "account not found"
 	AccountsNotFound      = "accounts not found "
 	TransactionsNotFound  = "transactions not found"
 

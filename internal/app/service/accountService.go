@@ -8,7 +8,7 @@ import (
 	"github.com/vaberof/banking_app/internal/app/model"
 )
 
-func CreateAccount(accountType string, claims *jwt.RegisteredClaims) *model.Account {
+func CreateCustomAccount(accountType string, claims *jwt.RegisteredClaims) *model.Account {
 	account := model.NewAccount()
 	user := model.NewUser()
 
@@ -20,6 +20,17 @@ func CreateAccount(accountType string, claims *jwt.RegisteredClaims) *model.Acco
 	account.SetCustomAccountType(accountType)
 
 	return account
+}
+
+func CreateInitialAccount(userID uint, username string) *model.Account {
+	initialAccount := model.NewAccount()
+
+	initialAccount.SetUserID(userID)
+	initialAccount.SetOwner(username)
+	initialAccount.SetMainAccountType()
+	initialAccount.SetInitialBalance()
+
+	return initialAccount
 }
 
 func CreateAccountInDatabase(account *model.Account) {

@@ -19,7 +19,7 @@ func Transfer(c *fiber.Ctx) error {
 	if err != nil {
 		c.Status(fiber.StatusUnauthorized)
 		return c.JSON(fiber.Map{
-			"message": "unauthorized",
+			"message": constants.Unauthorized,
 		})
 	}
 	claims := token.Claims.(*jwt.RegisteredClaims)

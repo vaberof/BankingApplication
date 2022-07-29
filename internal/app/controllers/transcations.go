@@ -31,7 +31,6 @@ func Transactions(c *fiber.Ctx) error {
 
 	c.Status(fiber.StatusOK)
 	return c.JSON(fiber.Map{
-		"message":      constants.Success,
 		"transactions": transactions,
 	})
 }

@@ -45,8 +45,7 @@ func CreateAccount(c *fiber.Ctx) error {
 		})
 	}
 
-	account := service.CreateAccount(accountType, claims)
-
+	account := service.CreateCustomAccount(accountType, claims)
 	service.CreateAccountInDatabase(account)
 
 	c.Status(fiber.StatusOK)
@@ -81,7 +80,7 @@ func DeleteAccount(c *fiber.Ctx) error {
 	if service.IsMainAccountType(accountType) {
 		c.Status(fiber.StatusConflict)
 		return c.JSON(fiber.Map{
-			"message": "cannot delete main account",
+			"message": constants.FailedDeleteMainAccount,
 		})
 	}
 
@@ -89,14 +88,14 @@ func DeleteAccount(c *fiber.Ctx) error {
 	if err != nil {
 		c.Status(fiber.StatusNotFound)
 		return c.JSON(fiber.Map{
-			"message": "account type not found",
+			"message": constants.AccountNotFound,
 		})
 	}
 
 	if !service.IsZeroBalance(account) {
 		c.Status(fiber.StatusInternalServerError)
 		return c.JSON(fiber.Map{
-			"message": "cannot delete account, because balance is not 0",
+			"message": constants.FailedDeleteNonZeroBalanceAccount,
 		})
 	}
 
@@ -104,6 +103,6 @@ func DeleteAccount(c *fiber.Ctx) error {
 
 	c.Status(fiber.StatusOK)
 	return c.JSON(fiber.Map{
-		"message": "account successfully deleted",
+		"message": constants.Success,
 	})
 }
