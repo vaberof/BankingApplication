@@ -40,9 +40,9 @@ func Transfer(c *fiber.Ctx) error {
 		})
 	}
 
-	senderUserID, payeeUsername, payeeAccountID, amount, transferType := service.GetTransactionData(data, claims)
-	transaction := service.CreateTransaction(senderUserID, payeeUsername, payeeAccountID, amount, transferType)
-	service.CreateTransactionInDatabase(transaction)
+	senderUserID, senderAccountID, payeeUsername, payeeAccountID, amount, transferType := service.GetTransferData(data, claims)
+	transfer := service.CreateTransfer(senderUserID, senderAccountID, payeeUsername, payeeAccountID, amount, transferType)
+	service.CreateTransferInDatabase(transfer)
 
 	c.Status(fiber.StatusOK)
 	return c.JSON(fiber.Map{

@@ -101,6 +101,54 @@ func ClientTransfer(data map[string]string, claims *jwt.RegisteredClaims) error 
 	return nil
 }
 
+func CreateTransfer(senderUserID, senderAccountID uint, payeeUsername string, payeeAccountID uint, amount int, transferType string) *model.Transfer {
+	transfer := model.NewTransfer()
+
+	transfer.SetSenderID(senderUserID)
+	transfer.SetSenderAccountID(senderAccountID)
+	transfer.SetPayeeUsername(payeeUsername)
+	transfer.SetPayeeAccountID(payeeAccountID)
+	transfer.SetAmount(amount)
+	transfer.SetType(transferType)
+
+	return transfer
+}
+
+func CreateTransferInDatabase(transfer *model.Transfer) {
+	database.DB.Create(&transfer)
+}
+
+func GetTransferData(data map[string]string, claims *jwt.RegisteredClaims) (uint, uint, string, uint, int, string) {
+	sender, _ := FindUserById(claims.Issuer)
+	senderAccount, _ := FindAccountByID(data["from_account"])
+	payeeAccount, _ := FindAccountByID(data["to_account"])
+
+	senderUserID := sender.ID
+	senderAccountID := senderAccount.ID
+	payeeUsername := payeeAccount.Owner
+	payeeAccountID := payeeAccount.ID
+	amount := data["amount"]
+	transferType := data["transfer_type"]
+	intAmount, _ := ConvertAmountToInt(amount)
+
+	return senderUserID, senderAccountID, payeeUsername, payeeAccountID, intAmount, transferType
+}
+
+func GetUserTransfers(claims *jwt.RegisteredClaims) (*model.Transfers, error) {
+	var transfers *model.Transfers
+
+	database.DB.Table("transfers").Where("sender_id = ?", claims.Issuer).Find(&transfers)
+
+	dereferenceTransfers := *transfers
+
+	if len(*dereferenceTransfers) == 0 {
+		customError := errors.New(constants.TransfersNotFound)
+		return transfers, customError
+	}
+
+	return transfers, nil
+}
+
 func ConvertAmountToInt(amount string) (int, error) {
 	intAmount, err := strconv.Atoi(amount)
 	if err != nil {

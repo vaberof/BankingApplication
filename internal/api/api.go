@@ -54,8 +54,8 @@ func MakeTransfer(c *fiber.Ctx) error {
 	return nil
 }
 
-func GetTransactionsHistory(c *fiber.Ctx) error {
-	if err := controllers.Transactions(c); err != nil {
+func GetTransfers(c *fiber.Ctx) error {
+	if err := controllers.Transfers(c); err != nil {
 		return err
 	}
 	return nil

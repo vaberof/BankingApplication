@@ -49,7 +49,7 @@ func GetUserAccounts(claims *jwt.RegisteredClaims) (*model.Accounts, error) {
 	dereferenceAccounts := *accounts
 
 	if len(*dereferenceAccounts) == 0 {
-		customError := errors.New(constants.TransactionsNotFound)
+		customError := errors.New(constants.TransfersNotFound)
 		return accounts, customError
 	}
 

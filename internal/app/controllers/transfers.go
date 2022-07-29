@@ -7,7 +7,7 @@ import (
 	"github.com/vaberof/banking_app/internal/app/service"
 )
 
-func Transactions(c *fiber.Ctx) error {
+func Transfers(c *fiber.Ctx) error {
 	cookie := c.Cookies("jwt")
 
 	token, err := service.ParseJwtToken(cookie)
@@ -21,16 +21,16 @@ func Transactions(c *fiber.Ctx) error {
 
 	claims := token.Claims.(*jwt.RegisteredClaims)
 
-	transactions, err := service.GetUserTransactions(claims)
+	transfers, err := service.GetUserTransfers(claims)
 	if err != nil {
 		c.Status(fiber.StatusNotFound)
 		return c.JSON(fiber.Map{
-			"message": constants.TransactionsNotFound,
+			"message": constants.TransfersNotFound,
 		})
 	}
 
 	c.Status(fiber.StatusOK)
 	return c.JSON(fiber.Map{
-		"transactions": transactions,
+		"transfers": transfers,
 	})
 }
