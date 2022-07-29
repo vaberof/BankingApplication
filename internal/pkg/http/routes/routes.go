@@ -14,4 +14,5 @@ func Setup(app *fiber.App) {
 	app.Delete("/account", api.DeleteAccount)
 	app.Post("/transfer", api.MakeTransfer)
 	app.Get("/transfers", api.GetTransfers)
+	app.Get("/deposits", api.GetDeposits)
 }

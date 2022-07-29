@@ -18,6 +18,7 @@ const (
 	AccountNotFound       = "account not found"
 	AccountsNotFound      = "accounts not found "
 	TransfersNotFound     = "transfers not found"
+	DepositsNotFound      = "deposits not found"
 
 	SenderIsRecipient = "you are trying to make a transfer to your own account"
 	InsufficientFunds = "insufficient funds"

@@ -60,3 +60,10 @@ func GetTransfers(c *fiber.Ctx) error {
 	}
 	return nil
 }
+
+func GetDeposits(c *fiber.Ctx) error {
+	if err := controllers.Deposits(c); err != nil {
+		return err
+	}
+	return nil
+}

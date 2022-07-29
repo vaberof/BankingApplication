@@ -28,4 +28,5 @@ func Connect() {
 	connection.AutoMigrate(model.User{})
 	connection.AutoMigrate(model.Account{})
 	connection.AutoMigrate(model.Transfer{})
+	connection.AutoMigrate(model.Deposit{})
 }

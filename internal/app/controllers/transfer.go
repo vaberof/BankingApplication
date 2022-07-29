@@ -44,6 +44,10 @@ func Transfer(c *fiber.Ctx) error {
 	transfer := service.CreateTransfer(senderUserID, senderAccountID, payeeUsername, payeeAccountID, amount, transferType)
 	service.CreateTransferInDatabase(transfer)
 
+	senderUsername, payeeID := service.GetDepositData(data, claims)
+	deposit := service.CreateDeposit(senderUserID, senderUsername, senderAccountID, payeeID, payeeAccountID, amount, transferType)
+	service.CreateDepositInDatabase(deposit)
+
 	c.Status(fiber.StatusOK)
 	return c.JSON(fiber.Map{
 		"message": constants.Success,

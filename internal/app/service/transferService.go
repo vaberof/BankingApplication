@@ -125,11 +125,14 @@ func GetTransferData(data map[string]string, claims *jwt.RegisteredClaims) (uint
 
 	senderUserID := sender.ID
 	senderAccountID := senderAccount.ID
+
 	payeeUsername := payeeAccount.Owner
 	payeeAccountID := payeeAccount.ID
+
 	amount := data["amount"]
-	transferType := data["transfer_type"]
 	intAmount, _ := ConvertAmountToInt(amount)
+
+	transferType := data["transfer_type"]
 
 	return senderUserID, senderAccountID, payeeUsername, payeeAccountID, intAmount, transferType
 }

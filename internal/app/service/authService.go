@@ -20,6 +20,10 @@ func CreateUser(inputUsername string, hashedPassword []byte) *model.User {
 	return user
 }
 
+func CreateUserInDatabase(user *model.User) {
+	database.DB.Create(&user)
+}
+
 func GetUser(data map[string]string) (*model.User, error) {
 	user := model.NewUser()
 
@@ -40,8 +44,14 @@ func FindUserById(userID string) (*model.User, error) {
 	return user, nil
 }
 
-func CreateUserInDatabase(user *model.User) {
-	database.DB.Create(&user)
+func FindUserByUsername(username string) (*model.User, error) {
+	user := model.NewUser()
+
+	result := database.DB.Table("users").Where("username = ?", username).First(&user)
+	if result.Error != nil {
+		return user, result.Error
+	}
+	return user, nil
 }
 
 func IsCorrectPassword(hashedPassword []byte, password string) bool {
