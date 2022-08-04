@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-func Transfer(c *fiber.Ctx) error {
+func MakeTransfer(c *fiber.Ctx) error {
 	cookie := c.Cookies("jwt")
 
 	token, err := jwt.ParseWithClaims(cookie, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {

@@ -6,7 +6,7 @@ import (
 	"github.com/vaberof/banking_app/internal/app/service"
 )
 
-func Register(c *fiber.Ctx) error {
+func Signup(c *fiber.Ctx) error {
 	var data map[string]string
 
 	err := c.BodyParser(&data)

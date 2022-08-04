@@ -7,7 +7,7 @@ import (
 	"github.com/vaberof/banking_app/internal/app/service"
 )
 
-func Transfers(c *fiber.Ctx) error {
+func GetTransfers(c *fiber.Ctx) error {
 	cookie := c.Cookies("jwt")
 
 	token, err := service.ParseJwtToken(cookie)
