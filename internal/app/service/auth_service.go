@@ -4,54 +4,54 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/vaberof/banking_app/internal/app/database"
-	"github.com/vaberof/banking_app/internal/app/model"
+	"github.com/vaberof/banking_app/internal/app/domain/user"
 	"golang.org/x/crypto/bcrypt"
 	"os"
 	"strconv"
 	"time"
 )
 
-func CreateUser(inputUsername string, hashedPassword []byte) *model.User {
-	user := model.NewUser()
+func CreateUser(inputUsername string, hashedPassword []byte) *user.User {
+	newUser := user.NewUser()
 
-	user.SetUsername(inputUsername)
-	user.SetPassword(hashedPassword)
+	newUser.SetUsername(inputUsername)
+	newUser.SetPassword(hashedPassword)
 
-	return user
+	return newUser
 }
 
-func CreateUserInDatabase(user *model.User) {
+func CreateUserInDatabase(user *user.User) {
 	database.DB.Create(&user)
 }
 
-func GetUser(data map[string]string) (*model.User, error) {
-	user := model.NewUser()
+func GetUser(data map[string]string) (*user.User, error) {
+	newUser := user.NewUser()
 
-	result := database.DB.Table("users").Where("username = ?", data["username"]).First(&user)
+	result := database.DB.Table("users").Where("username = ?", data["username"]).First(&newUser)
 	if result.Error != nil {
-		return user, result.Error
+		return newUser, result.Error
 	}
-	return user, nil
+	return newUser, nil
 }
 
-func FindUserById(userID string) (*model.User, error) {
-	user := model.NewUser()
+func FindUserById(userID string) (*user.User, error) {
+	newUser := user.NewUser()
 
-	result := database.DB.Table("users").Where("id = ?", userID).First(&user)
+	result := database.DB.Table("users").Where("id = ?", userID).First(&newUser)
 	if result.Error != nil {
-		return user, result.Error
+		return newUser, result.Error
 	}
-	return user, nil
+	return newUser, nil
 }
 
-func FindUserByUsername(username string) (*model.User, error) {
-	user := model.NewUser()
+func FindUserByUsername(username string) (*user.User, error) {
+	newUser := user.NewUser()
 
-	result := database.DB.Table("users").Where("username = ?", username).First(&user)
+	result := database.DB.Table("users").Where("username = ?", username).First(&newUser)
 	if result.Error != nil {
-		return user, result.Error
+		return newUser, result.Error
 	}
-	return user, nil
+	return newUser, nil
 }
 
 func IsCorrectPassword(hashedPassword []byte, password string) bool {
@@ -66,7 +66,7 @@ func HashPassword(password string) []byte {
 	return hashedPassword
 }
 
-func CreateJwtClaims(user *model.User) *jwt.Token {
+func CreateJwtClaims(user *user.User) *jwt.Token {
 	claims := jwt.NewWithClaims(
 		jwt.SigningMethodHS256,
 		jwt.RegisteredClaims{

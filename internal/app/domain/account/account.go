@@ -1,8 +1,8 @@
-package model
+package account
 
 import "gorm.io/gorm"
 
-type Accounts *[]Account
+type Accounts []*Account
 
 type Account struct {
 	gorm.Model

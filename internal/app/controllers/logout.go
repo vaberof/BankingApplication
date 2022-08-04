@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/vaberof/banking_app/internal/app/constants"
 	"github.com/vaberof/banking_app/internal/app/service"
+	"github.com/vaberof/banking_app/internal/pkg/responses"
 )
 
 func Logout(c *fiber.Ctx) error {
@@ -12,6 +12,6 @@ func Logout(c *fiber.Ctx) error {
 
 	c.Status(fiber.StatusOK)
 	return c.JSON(fiber.Map{
-		"message": constants.Success,
+		"message": responses.Success,
 	})
 }

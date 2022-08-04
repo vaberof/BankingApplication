@@ -3,8 +3,8 @@ package controllers
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/vaberof/banking_app/internal/app/constants"
 	"github.com/vaberof/banking_app/internal/app/service"
+	"github.com/vaberof/banking_app/internal/pkg/responses"
 	"os"
 )
 
@@ -19,7 +19,7 @@ func MakeTransfer(c *fiber.Ctx) error {
 	if err != nil {
 		c.Status(fiber.StatusUnauthorized)
 		return c.JSON(fiber.Map{
-			"message": constants.Unauthorized,
+			"message": responses.Unauthorized,
 		})
 	}
 	claims := token.Claims.(*jwt.RegisteredClaims)
@@ -35,7 +35,7 @@ func MakeTransfer(c *fiber.Ctx) error {
 	if err != nil {
 		c.Status(fiber.StatusConflict)
 		return c.JSON(fiber.Map{
-			"message": constants.FailedTransfer,
+			"message": responses.FailedTransfer,
 			"error":   err.Error(),
 		})
 	}
@@ -50,6 +50,6 @@ func MakeTransfer(c *fiber.Ctx) error {
 
 	c.Status(fiber.StatusOK)
 	return c.JSON(fiber.Map{
-		"message": constants.Success,
+		"message": responses.Success,
 	})
 }

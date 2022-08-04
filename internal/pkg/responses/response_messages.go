@@ -1,4 +1,4 @@
-package constants
+package responses
 
 const (
 	Success                        = "success"

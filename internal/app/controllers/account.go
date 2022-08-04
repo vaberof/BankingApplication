@@ -3,8 +3,8 @@ package controllers
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/vaberof/banking_app/internal/app/constants"
 	"github.com/vaberof/banking_app/internal/app/service"
+	"github.com/vaberof/banking_app/internal/pkg/responses"
 )
 
 func CreateAccount(c *fiber.Ctx) error {
@@ -15,7 +15,7 @@ func CreateAccount(c *fiber.Ctx) error {
 	if err != nil {
 		c.Status(fiber.StatusUnauthorized)
 		return c.JSON(fiber.Map{
-			"message": constants.Unauthorized,
+			"message": responses.Unauthorized,
 		})
 	}
 
@@ -33,7 +33,7 @@ func CreateAccount(c *fiber.Ctx) error {
 	if service.IsEmptyAccountType(accountType) {
 		c.Status(fiber.StatusConflict)
 		return c.JSON(fiber.Map{
-			"message": constants.EmptyAccountType,
+			"message": responses.EmptyAccountType,
 		})
 	}
 
@@ -41,7 +41,7 @@ func CreateAccount(c *fiber.Ctx) error {
 	if err == nil {
 		c.Status(fiber.StatusConflict)
 		return c.JSON(fiber.Map{
-			"message": constants.AccountAlreadyExists,
+			"message": responses.AccountAlreadyExists,
 		})
 	}
 
@@ -50,7 +50,7 @@ func CreateAccount(c *fiber.Ctx) error {
 
 	c.Status(fiber.StatusOK)
 	return c.JSON(fiber.Map{
-		"message": constants.Success,
+		"message": responses.Success,
 	})
 }
 
@@ -62,7 +62,7 @@ func DeleteAccount(c *fiber.Ctx) error {
 	if err != nil {
 		c.Status(fiber.StatusUnauthorized)
 		return c.JSON(fiber.Map{
-			"message": constants.Unauthorized,
+			"message": responses.Unauthorized,
 		})
 	}
 
@@ -80,7 +80,7 @@ func DeleteAccount(c *fiber.Ctx) error {
 	if service.IsMainAccountType(accountType) {
 		c.Status(fiber.StatusConflict)
 		return c.JSON(fiber.Map{
-			"message": constants.FailedDeleteMainAccount,
+			"message": responses.FailedDeleteMainAccount,
 		})
 	}
 
@@ -88,14 +88,14 @@ func DeleteAccount(c *fiber.Ctx) error {
 	if err != nil {
 		c.Status(fiber.StatusNotFound)
 		return c.JSON(fiber.Map{
-			"message": constants.AccountNotFound,
+			"message": responses.AccountNotFound,
 		})
 	}
 
 	if !service.IsZeroBalance(account) {
 		c.Status(fiber.StatusInternalServerError)
 		return c.JSON(fiber.Map{
-			"message": constants.FailedDeleteNonZeroBalanceAccount,
+			"message": responses.FailedDeleteNonZeroBalanceAccount,
 		})
 	}
 
@@ -103,6 +103,6 @@ func DeleteAccount(c *fiber.Ctx) error {
 
 	c.Status(fiber.StatusOK)
 	return c.JSON(fiber.Map{
-		"message": constants.Success,
+		"message": responses.Success,
 	})
 }

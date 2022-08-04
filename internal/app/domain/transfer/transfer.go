@@ -1,8 +1,8 @@
-package model
+package transfer
 
 import "gorm.io/gorm"
 
-type Transfers *[]Transfer
+type Transfers []*Transfer
 
 type Transfer struct {
 	gorm.Model

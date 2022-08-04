@@ -2,7 +2,10 @@ package database
 
 import (
 	"fmt"
-	"github.com/vaberof/banking_app/internal/app/model"
+	"github.com/vaberof/banking_app/internal/app/domain/account"
+	"github.com/vaberof/banking_app/internal/app/domain/deposit"
+	"github.com/vaberof/banking_app/internal/app/domain/transfer"
+	"github.com/vaberof/banking_app/internal/app/domain/user"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"os"
@@ -25,8 +28,8 @@ func Connect() {
 
 	DB = connection
 
-	connection.AutoMigrate(model.User{})
-	connection.AutoMigrate(model.Account{})
-	connection.AutoMigrate(model.Transfer{})
-	connection.AutoMigrate(model.Deposit{})
+	connection.AutoMigrate(user.User{})
+	connection.AutoMigrate(account.Account{})
+	connection.AutoMigrate(transfer.Transfer{})
+	connection.AutoMigrate(deposit.Deposit{})
 }

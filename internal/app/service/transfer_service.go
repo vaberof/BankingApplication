@@ -3,9 +3,10 @@ package service
 import (
 	"errors"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/vaberof/banking_app/internal/app/constants"
 	"github.com/vaberof/banking_app/internal/app/database"
-	"github.com/vaberof/banking_app/internal/app/model"
+	"github.com/vaberof/banking_app/internal/app/domain/account"
+	"github.com/vaberof/banking_app/internal/app/domain/transfer"
+	"github.com/vaberof/banking_app/internal/pkg/responses"
 	"gorm.io/gorm"
 	"strconv"
 )
@@ -18,7 +19,7 @@ func MakeTransfer(data map[string]string, claims *jwt.RegisteredClaims) error {
 	case "personal":
 		return PersonalTransfer(data, claims)
 	default:
-		customError := errors.New(constants.UnsupportedTransferType)
+		customError := errors.New(responses.UnsupportedTransferType)
 		return customError
 	}
 }
@@ -39,7 +40,7 @@ func PersonalTransfer(data map[string]string, claims *jwt.RegisteredClaims) erro
 	}
 
 	if isTheSameAccountID(senderAccount.ID, payeeAccount.ID) {
-		customError := errors.New(constants.SenderIsPayee)
+		customError := errors.New(responses.SenderIsPayee)
 		return customError
 	}
 
@@ -49,7 +50,7 @@ func PersonalTransfer(data map[string]string, claims *jwt.RegisteredClaims) erro
 	}
 
 	if !isEnoughFunds(senderAccount, intAmount) {
-		customError := errors.New(constants.InsufficientFunds)
+		customError := errors.New(responses.InsufficientFunds)
 		return customError
 	}
 
@@ -78,7 +79,7 @@ func ClientTransfer(data map[string]string, claims *jwt.RegisteredClaims) error 
 	}
 
 	if isTheSameAccountOwner(senderAccount.UserID, payeeAccount.UserID) {
-		customError := errors.New(constants.SenderIsPayee)
+		customError := errors.New(responses.SenderIsPayee)
 		return customError
 	}
 
@@ -88,7 +89,7 @@ func ClientTransfer(data map[string]string, claims *jwt.RegisteredClaims) error 
 	}
 
 	if !isEnoughFunds(senderAccount, intAmount) {
-		customError := errors.New(constants.InsufficientFunds)
+		customError := errors.New(responses.InsufficientFunds)
 		return customError
 	}
 
@@ -101,20 +102,20 @@ func ClientTransfer(data map[string]string, claims *jwt.RegisteredClaims) error 
 	return nil
 }
 
-func CreateTransfer(senderUserID, senderAccountID uint, payeeUsername string, payeeAccountID uint, amount int, transferType string) *model.Transfer {
-	transfer := model.NewTransfer()
+func CreateTransfer(senderUserID, senderAccountID uint, payeeUsername string, payeeAccountID uint, amount int, transferType string) *transfer.Transfer {
+	newTransfer := transfer.NewTransfer()
 
-	transfer.SetSenderID(senderUserID)
-	transfer.SetSenderAccountID(senderAccountID)
-	transfer.SetPayeeUsername(payeeUsername)
-	transfer.SetPayeeAccountID(payeeAccountID)
-	transfer.SetAmount(amount)
-	transfer.SetType(transferType)
+	newTransfer.SetSenderID(senderUserID)
+	newTransfer.SetSenderAccountID(senderAccountID)
+	newTransfer.SetPayeeUsername(payeeUsername)
+	newTransfer.SetPayeeAccountID(payeeAccountID)
+	newTransfer.SetAmount(amount)
+	newTransfer.SetType(transferType)
 
-	return transfer
+	return newTransfer
 }
 
-func CreateTransferInDatabase(transfer *model.Transfer) {
+func CreateTransferInDatabase(transfer *transfer.Transfer) {
 	database.DB.Create(&transfer)
 }
 
@@ -137,15 +138,15 @@ func GetTransferData(data map[string]string, claims *jwt.RegisteredClaims) (uint
 	return senderUserID, senderAccountID, payeeUsername, payeeAccountID, intAmount, transferType
 }
 
-func GetUserTransfers(claims *jwt.RegisteredClaims) (*model.Transfers, error) {
-	var transfers *model.Transfers
+func GetUserTransfers(claims *jwt.RegisteredClaims) (*transfer.Transfers, error) {
+	var transfers *transfer.Transfers
 
 	database.DB.Table("transfers").Where("sender_id = ?", claims.Issuer).Find(&transfers)
 
 	dereferenceTransfers := *transfers
 
-	if len(*dereferenceTransfers) == 0 {
-		customError := errors.New(constants.TransfersNotFound)
+	if len(dereferenceTransfers) == 0 {
+		customError := errors.New(responses.TransfersNotFound)
 		return transfers, customError
 	}
 
@@ -155,58 +156,58 @@ func GetUserTransfers(claims *jwt.RegisteredClaims) (*model.Transfers, error) {
 func ConvertAmountToInt(amount string) (int, error) {
 	intAmount, err := strconv.Atoi(amount)
 	if err != nil {
-		customError := errors.New(constants.UnsupportedTransferAmount)
+		customError := errors.New(responses.UnsupportedTransferAmount)
 		return -1, customError
 	}
 
 	return intAmount, nil
 }
 
-func getSenderAccount(claims *jwt.RegisteredClaims, accountID string) (*model.Account, *gorm.DB, error) {
-	account := model.NewAccount()
+func getSenderAccount(claims *jwt.RegisteredClaims, accountID string) (*account.Account, *gorm.DB, error) {
+	newAccount := account.NewAccount()
 
 	accountDbObject := database.DB.Table("accounts").
 		Where("user_id = ?", claims.Issuer).
 		Where("id = ?", accountID).
-		First(&account)
+		First(&newAccount)
 
 	if accountDbObject.Error != nil {
-		customError := errors.New(constants.SenderAccountNotFound)
-		return account, accountDbObject, customError
+		customError := errors.New(responses.SenderAccountNotFound)
+		return newAccount, accountDbObject, customError
 	}
 
-	return account, accountDbObject, nil
+	return newAccount, accountDbObject, nil
 }
 
-func getPersonalPayeeAccount(claims *jwt.RegisteredClaims, accountID string) (*model.Account, *gorm.DB, error) {
-	account := model.NewAccount()
+func getPersonalPayeeAccount(claims *jwt.RegisteredClaims, accountID string) (*account.Account, *gorm.DB, error) {
+	newAccount := account.NewAccount()
 
 	accountDbObject := database.DB.Table("accounts").
 		Where("user_id = ?", claims.Issuer).
 		Where("id = ?", accountID).
-		First(&account)
+		First(&newAccount)
 
 	if accountDbObject.Error != nil {
-		customError := errors.New(constants.PayeeAccountNotFound)
-		return account, accountDbObject, customError
+		customError := errors.New(responses.PayeeAccountNotFound)
+		return newAccount, accountDbObject, customError
 	}
 
-	return account, accountDbObject, nil
+	return newAccount, accountDbObject, nil
 }
 
-func getClientPayeeAccount(accountID string) (*model.Account, *gorm.DB, error) {
-	account := model.NewAccount()
+func getClientPayeeAccount(accountID string) (*account.Account, *gorm.DB, error) {
+	newAccount := account.NewAccount()
 
 	accountDbObject := database.DB.Table("accounts").
 		Where("id = ?", accountID).
-		First(&account)
+		First(&newAccount)
 
 	if accountDbObject.Error != nil {
-		customError := errors.New(constants.PayeeAccountNotFound)
-		return account, accountDbObject, customError
+		customError := errors.New(responses.PayeeAccountNotFound)
+		return newAccount, accountDbObject, customError
 	}
 
-	return account, accountDbObject, nil
+	return newAccount, accountDbObject, nil
 }
 
 func isTheSameAccountID(senderAccountID, payeeAccountID uint) bool {
@@ -217,6 +218,6 @@ func isTheSameAccountOwner(senderUserID, payeeAccountID uint) bool {
 	return senderUserID == payeeAccountID
 }
 
-func isEnoughFunds(account *model.Account, amount int) bool {
+func isEnoughFunds(account *account.Account, amount int) bool {
 	return account.Balance-amount >= 0
 }

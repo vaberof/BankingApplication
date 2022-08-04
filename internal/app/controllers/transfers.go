@@ -3,8 +3,8 @@ package controllers
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/vaberof/banking_app/internal/app/constants"
 	"github.com/vaberof/banking_app/internal/app/service"
+	"github.com/vaberof/banking_app/internal/pkg/responses"
 )
 
 func GetTransfers(c *fiber.Ctx) error {
@@ -15,7 +15,7 @@ func GetTransfers(c *fiber.Ctx) error {
 	if err != nil {
 		c.Status(fiber.StatusUnauthorized)
 		return c.JSON(fiber.Map{
-			"message": constants.Unauthorized,
+			"message": responses.Unauthorized,
 		})
 	}
 
@@ -25,7 +25,7 @@ func GetTransfers(c *fiber.Ctx) error {
 	if err != nil {
 		c.Status(fiber.StatusNotFound)
 		return c.JSON(fiber.Map{
-			"message": constants.TransfersNotFound,
+			"message": responses.TransfersNotFound,
 		})
 	}
 

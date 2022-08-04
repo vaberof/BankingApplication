@@ -1,8 +1,8 @@
-package model
+package deposit
 
 import "gorm.io/gorm"
 
-type Deposits *[]Deposit
+type Deposits []*Deposit
 
 type Deposit struct {
 	gorm.Model

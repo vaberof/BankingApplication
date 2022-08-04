@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/vaberof/banking_app/internal/app/constants"
 	"github.com/vaberof/banking_app/internal/app/service"
+	"github.com/vaberof/banking_app/internal/pkg/responses"
 )
 
 func Login(c *fiber.Ctx) error {
@@ -18,7 +18,7 @@ func Login(c *fiber.Ctx) error {
 	if err != nil {
 		c.Status(fiber.StatusConflict)
 		return c.JSON(fiber.Map{
-			"message": constants.IncorrectUsernameAndOrPassword,
+			"message": responses.IncorrectUsernameAndOrPassword,
 		})
 	}
 
@@ -27,7 +27,7 @@ func Login(c *fiber.Ctx) error {
 	if !service.IsCorrectPassword(user.Password, inputPassword) {
 		c.Status(fiber.StatusConflict)
 		return c.JSON(fiber.Map{
-			"message": constants.IncorrectUsernameAndOrPassword,
+			"message": responses.IncorrectUsernameAndOrPassword,
 		})
 	}
 
@@ -37,7 +37,7 @@ func Login(c *fiber.Ctx) error {
 	if err != nil {
 		c.Status(fiber.StatusInternalServerError)
 		return c.JSON(fiber.Map{
-			"message": constants.FailedLogin,
+			"message": responses.FailedLogin,
 		})
 	}
 

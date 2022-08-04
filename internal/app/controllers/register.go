@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/vaberof/banking_app/internal/app/constants"
 	"github.com/vaberof/banking_app/internal/app/service"
+	"github.com/vaberof/banking_app/internal/pkg/responses"
 )
 
 func Signup(c *fiber.Ctx) error {
@@ -20,7 +20,7 @@ func Signup(c *fiber.Ctx) error {
 	if err == nil {
 		c.Status(fiber.StatusConflict)
 		return c.JSON(fiber.Map{
-			"message": constants.UserAlreadyExists,
+			"message": responses.UserAlreadyExists,
 		})
 	}
 
@@ -35,6 +35,6 @@ func Signup(c *fiber.Ctx) error {
 
 	c.Status(fiber.StatusOK)
 	return c.JSON(fiber.Map{
-		"message": constants.Success,
+		"message": responses.Success,
 	})
 }
