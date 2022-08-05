@@ -1,4 +1,4 @@
-package controllers
+package handler
 
 import (
 	"github.com/gofiber/fiber/v2"
@@ -6,7 +6,7 @@ import (
 	"github.com/vaberof/banking_app/internal/pkg/responses"
 )
 
-func Login(c *fiber.Ctx) error {
+func (h *Handler) Login(c *fiber.Ctx) error {
 	var data map[string]string
 
 	err := c.BodyParser(&data)

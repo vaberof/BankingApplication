@@ -2,33 +2,46 @@ package main
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
 	"github.com/vaberof/banking_app/internal/app/database"
-	"github.com/vaberof/banking_app/internal/pkg/http/routes"
+	"github.com/vaberof/banking_app/internal/app/handler"
 	"github.com/vaberof/banking_app/internal/pkg/http/server"
 	"log"
+	"time"
 )
 
 func main() {
-	loadEnvironmentVariables()
+	if err := initConfig(); err != nil {
+		log.Fatalf("failed initializating configs: %s", err.Error())
+	}
 
-	app := fiber.New()
+	if err := loadEnvironmentVariables(); err != nil {
+		log.Fatalf("failed loading environment variables: %s", err.Error())
+	}
 
-	app.Use(cors.New(cors.Config{
-		AllowCredentials: true,
-	}))
+	config := fiber.Config{
+		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  10 * time.Second,
+	}
+
+	handlers := new(handler.Handler)
+	app := handlers.InitRoutes(config)
 
 	database.Connect()
 
-	routes.Setup(app)
-
-	server.Run(app)
+	if err := server.Run(viper.GetString("server.host"), viper.GetString("server.port"), app); err != nil {
+		log.Fatalf("cannot run server: %s", err.Error())
+	}
 }
 
-func loadEnvironmentVariables() {
+func initConfig() error {
+	viper.AddConfigPath("../../configs")
+	viper.SetConfigName("config")
+	return viper.ReadInConfig()
+}
+
+func loadEnvironmentVariables() error {
 	err := godotenv.Load("../../.env")
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	return err
 }

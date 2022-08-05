@@ -1,4 +1,4 @@
-package controllers
+package handler
 
 import (
 	"github.com/gofiber/fiber/v2"
@@ -7,7 +7,7 @@ import (
 	"github.com/vaberof/banking_app/internal/pkg/responses"
 )
 
-func GetBalance(c *fiber.Ctx) error {
+func (h *Handler) GetBalance(c *fiber.Ctx) error {
 	cookie := c.Cookies("jwt")
 
 	token, err := service.ParseJwtToken(cookie)

@@ -1,4 +1,4 @@
-package controllers
+package handler
 
 import (
 	"github.com/gofiber/fiber/v2"
@@ -7,7 +7,7 @@ import (
 	"github.com/vaberof/banking_app/internal/pkg/responses"
 )
 
-func CreateAccount(c *fiber.Ctx) error {
+func (h *Handler) CreateAccount(c *fiber.Ctx) error {
 	cookie := c.Cookies("jwt")
 
 	token, err := service.ParseJwtToken(cookie)
@@ -54,7 +54,7 @@ func CreateAccount(c *fiber.Ctx) error {
 	})
 }
 
-func DeleteAccount(c *fiber.Ctx) error {
+func (h *Handler) DeleteAccount(c *fiber.Ctx) error {
 	cookie := c.Cookies("jwt")
 
 	token, err := service.ParseJwtToken(cookie)

@@ -1,4 +1,4 @@
-package controllers
+package handler
 
 import (
 	"github.com/gofiber/fiber/v2"
@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-func MakeTransfer(c *fiber.Ctx) error {
+func (h *Handler) MakeTransfer(c *fiber.Ctx) error {
 	cookie := c.Cookies("jwt")
 
 	token, err := jwt.ParseWithClaims(cookie, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {

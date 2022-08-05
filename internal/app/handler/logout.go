@@ -1,4 +1,4 @@
-package controllers
+package handler
 
 import (
 	"github.com/gofiber/fiber/v2"
@@ -6,7 +6,7 @@ import (
 	"github.com/vaberof/banking_app/internal/pkg/responses"
 )
 
-func Logout(c *fiber.Ctx) error {
+func (h *Handler) Logout(c *fiber.Ctx) error {
 	cookie := service.RemoveCookie()
 	c.Cookie(cookie)
 
