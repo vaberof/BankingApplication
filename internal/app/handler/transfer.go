@@ -3,35 +3,43 @@ package handler
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/vaberof/banking_app/internal/app/service"
+	"github.com/vaberof/banking_app/internal/app/domain"
 	"github.com/vaberof/banking_app/internal/pkg/responses"
-	"os"
+	"github.com/vaberof/banking_app/internal/pkg/typeconv"
 )
 
-func (h *Handler) MakeTransfer(c *fiber.Ctx) error {
-	cookie := c.Cookies("jwt")
+func (h *Handler) transfer(c *fiber.Ctx) error {
+	jwtToken := c.Cookies("jwt")
 
-	token, err := jwt.ParseWithClaims(cookie, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
-		secretKey := os.Getenv("secret_key")
-		return []byte(secretKey), nil
-	})
-
+	token, err := h.services.Authorization.ParseJwtToken(jwtToken)
 	if err != nil {
 		c.Status(fiber.StatusUnauthorized)
 		return c.JSON(fiber.Map{
 			"message": responses.Unauthorized,
 		})
 	}
+
 	claims := token.Claims.(*jwt.RegisteredClaims)
 
-	var data map[string]string
+	var input domain.Transfer
 
-	err = c.BodyParser(&data)
+	err = c.BodyParser(&input)
 	if err != nil {
-		return err
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": responses.FailedToParseBody,
+		})
 	}
 
-	err = service.MakeTransfer(data, claims)
+	userId, err := typeconv.ConvertStringIdToUintId(claims.Issuer)
+	if err != nil {
+		c.Status(fiber.StatusInternalServerError)
+		return c.JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	err = h.services.Transfer.MakeTransfer(userId, &input)
 	if err != nil {
 		c.Status(fiber.StatusConflict)
 		return c.JSON(fiber.Map{
@@ -40,13 +48,29 @@ func (h *Handler) MakeTransfer(c *fiber.Ctx) error {
 		})
 	}
 
-	senderUserID, senderAccountID, payeeUsername, payeeAccountID, amount, transferType := service.GetTransferData(data, claims)
-	transfer := service.CreateTransfer(senderUserID, senderAccountID, payeeUsername, payeeAccountID, amount, transferType)
-	service.CreateTransferInDatabase(transfer)
+	err = h.services.Transfer.CreateTransfer(userId, &input)
+	if err != nil {
+		c.Status(fiber.StatusInternalServerError)
+		return c.JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
 
-	senderUsername, payeeID := service.GetDepositData(data, claims)
-	deposit := service.CreateDeposit(senderUserID, senderUsername, senderAccountID, payeeID, payeeAccountID, amount, transferType)
-	service.CreateDepositInDatabase(deposit)
+	deposit, err := h.services.Deposit.TransformTransferToDeposit(userId, &input)
+	if err != nil {
+		c.Status(fiber.StatusInternalServerError)
+		return c.JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	err = h.services.Deposit.CreateDeposit(deposit)
+	if err != nil {
+		c.Status(fiber.StatusInternalServerError)
+		return c.JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
 
 	c.Status(fiber.StatusOK)
 	return c.JSON(fiber.Map{

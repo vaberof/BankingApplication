@@ -2,222 +2,181 @@ package service
 
 import (
 	"errors"
-	"github.com/golang-jwt/jwt/v4"
-	"github.com/vaberof/banking_app/internal/app/database"
-	"github.com/vaberof/banking_app/internal/app/domain/account"
-	"github.com/vaberof/banking_app/internal/app/domain/transfer"
+	"github.com/vaberof/banking_app/internal/app/domain"
+	"github.com/vaberof/banking_app/internal/app/repository"
 	"github.com/vaberof/banking_app/internal/pkg/responses"
-	"gorm.io/gorm"
-	"strconv"
 )
 
-func MakeTransfer(data map[string]string, claims *jwt.RegisteredClaims) error {
-	transferType := data["transfer_type"]
+type TransferService struct {
+	rTransfer        repository.Transfer
+	rTransferAccount repository.TransferAccount
+	rAccountFinder   repository.AccountFinder
+}
+
+func NewTransferService(rTransfer repository.Transfer, rTransferAccount repository.TransferAccount, rAccountFinder repository.AccountFinder) *TransferService {
+	return &TransferService{
+		rTransfer:        rTransfer,
+		rTransferAccount: rTransferAccount,
+		rAccountFinder:   rAccountFinder,
+	}
+}
+
+func (s *TransferService) MakeTransfer(userId uint, transfer *domain.Transfer) error {
+	transferType := transfer.Type
 	switch transferType {
 	case "client":
-		return ClientTransfer(data, claims)
+		return s.clientTransfer(userId, transfer)
 	case "personal":
-		return PersonalTransfer(data, claims)
+		return s.personalTransfer(userId, transfer)
 	default:
 		customError := errors.New(responses.UnsupportedTransferType)
 		return customError
 	}
 }
 
-func PersonalTransfer(data map[string]string, claims *jwt.RegisteredClaims) error {
-	senderAccountID := data["from_account"]
-	payeeAccountID := data["to_account"]
-	amount := data["amount"]
+func (s *TransferService) CreateTransfer(userId uint, transfer *domain.Transfer) error {
+	trans := domain.NewTransfer()
 
-	senderAccount, senderDbObject, err := getSenderAccount(claims, senderAccountID)
+	payeeAccount, err := s.rAccountFinder.GetAccountById(transfer.PayeeAccountId)
 	if err != nil {
-		return err
-	}
-
-	payeeAccount, payeeDbObject, err := getPersonalPayeeAccount(claims, payeeAccountID)
-	if err != nil {
-		return err
-	}
-
-	if isTheSameAccountID(senderAccount.ID, payeeAccount.ID) {
-		customError := errors.New(responses.SenderIsPayee)
+		customError := errors.New(responses.AccountNotFound)
 		return customError
 	}
 
-	intAmount, err := ConvertAmountToInt(amount)
+	trans.SetSenderId(userId)
+	trans.SetSenderAccountId(transfer.SenderAccountId)
+	trans.SetPayeeUsername(payeeAccount.Owner)
+	trans.SetPayeeAccountId(payeeAccount.Id)
+	trans.SetAmount(transfer.Amount)
+	trans.SetType(transfer.Type)
+
+	return s.rTransfer.CreateTransfer(trans)
+}
+
+func (s *TransferService) GetTransfers(userId uint) (*domain.Transfers, error) {
+	transfers, err := s.rTransfer.GetTransfers(userId)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	if !isEnoughFunds(senderAccount, intAmount) {
-		customError := errors.New(responses.InsufficientFunds)
-		return customError
-	}
-
-	newSenderBalance := senderAccount.Balance - intAmount
-	senderDbObject.Update("balance", newSenderBalance)
-
-	newPayeeBalance := payeeAccount.Balance + intAmount
-	payeeDbObject.Update("balance", newPayeeBalance)
-
-	return nil
-}
-
-func ClientTransfer(data map[string]string, claims *jwt.RegisteredClaims) error {
-	senderAccountID := data["from_account"]
-	payeeAccountID := data["to_account"]
-	amount := data["amount"]
-
-	senderAccount, senderDbObject, err := getSenderAccount(claims, senderAccountID)
-	if err != nil {
-		return err
-	}
-
-	payeeAccount, payeeDbObject, err := getClientPayeeAccount(payeeAccountID)
-	if err != nil {
-		return err
-	}
-
-	if isTheSameAccountOwner(senderAccount.UserID, payeeAccount.UserID) {
-		customError := errors.New(responses.SenderIsPayee)
-		return customError
-	}
-
-	intAmount, err := ConvertAmountToInt(amount)
-	if err != nil {
-		return err
-	}
-
-	if !isEnoughFunds(senderAccount, intAmount) {
-		customError := errors.New(responses.InsufficientFunds)
-		return customError
-	}
-
-	newSenderBalance := senderAccount.Balance - intAmount
-	senderDbObject.Update("balance", newSenderBalance)
-
-	newPayeeBalance := payeeAccount.Balance + intAmount
-	payeeDbObject.Update("balance", newPayeeBalance)
-
-	return nil
-}
-
-func CreateTransfer(senderUserID, senderAccountID uint, payeeUsername string, payeeAccountID uint, amount int, transferType string) *transfer.Transfer {
-	newTransfer := transfer.NewTransfer()
-
-	newTransfer.SetSenderID(senderUserID)
-	newTransfer.SetSenderAccountID(senderAccountID)
-	newTransfer.SetPayeeUsername(payeeUsername)
-	newTransfer.SetPayeeAccountID(payeeAccountID)
-	newTransfer.SetAmount(amount)
-	newTransfer.SetType(transferType)
-
-	return newTransfer
-}
-
-func CreateTransferInDatabase(transfer *transfer.Transfer) {
-	database.DB.Create(&transfer)
-}
-
-func GetTransferData(data map[string]string, claims *jwt.RegisteredClaims) (uint, uint, string, uint, int, string) {
-	sender, _ := FindUserById(claims.Issuer)
-	senderAccount, _ := FindAccountByID(data["from_account"])
-	payeeAccount, _ := FindAccountByID(data["to_account"])
-
-	senderUserID := sender.ID
-	senderAccountID := senderAccount.ID
-
-	payeeUsername := payeeAccount.Owner
-	payeeAccountID := payeeAccount.ID
-
-	amount := data["amount"]
-	intAmount, _ := ConvertAmountToInt(amount)
-
-	transferType := data["transfer_type"]
-
-	return senderUserID, senderAccountID, payeeUsername, payeeAccountID, intAmount, transferType
-}
-
-func GetUserTransfers(claims *jwt.RegisteredClaims) (*transfer.Transfers, error) {
-	var transfers *transfer.Transfers
-
-	database.DB.Table("transfers").Where("sender_id = ?", claims.Issuer).Find(&transfers)
-
-	dereferenceTransfers := *transfers
-
-	if len(dereferenceTransfers) == 0 {
-		customError := errors.New(responses.TransfersNotFound)
-		return transfers, customError
-	}
-
 	return transfers, nil
 }
 
-func ConvertAmountToInt(amount string) (int, error) {
-	intAmount, err := strconv.Atoi(amount)
+func (s *TransferService) clientTransfer(userId uint, transfer *domain.Transfer) error {
+	senderAccountId := transfer.SenderAccountId
+	payeeAccountId := transfer.PayeeAccountId
+	amount := transfer.Amount
+
+	senderAccount, err := s.rTransferAccount.GetSenderAccount(userId, senderAccountId)
 	if err != nil {
-		customError := errors.New(responses.UnsupportedTransferAmount)
-		return -1, customError
+		return err
 	}
 
-	return intAmount, nil
-}
-
-func getSenderAccount(claims *jwt.RegisteredClaims, accountID string) (*account.Account, *gorm.DB, error) {
-	newAccount := account.NewAccount()
-
-	accountDbObject := database.DB.Table("accounts").
-		Where("user_id = ?", claims.Issuer).
-		Where("id = ?", accountID).
-		First(&newAccount)
-
-	if accountDbObject.Error != nil {
-		customError := errors.New(responses.SenderAccountNotFound)
-		return newAccount, accountDbObject, customError
+	payeeAccount, err := s.rTransferAccount.GetClientPayeeAccount(payeeAccountId)
+	if err != nil {
+		return err
 	}
 
-	return newAccount, accountDbObject, nil
-}
-
-func getPersonalPayeeAccount(claims *jwt.RegisteredClaims, accountID string) (*account.Account, *gorm.DB, error) {
-	newAccount := account.NewAccount()
-
-	accountDbObject := database.DB.Table("accounts").
-		Where("user_id = ?", claims.Issuer).
-		Where("id = ?", accountID).
-		First(&newAccount)
-
-	if accountDbObject.Error != nil {
-		customError := errors.New(responses.PayeeAccountNotFound)
-		return newAccount, accountDbObject, customError
+	if isSameAccountOwner(senderAccount.UserId, payeeAccount.UserId) {
+		customError := errors.New(responses.SenderIsPayee)
+		return customError
 	}
 
-	return newAccount, accountDbObject, nil
-}
+	senderBalance := senderAccount.Balance
+	payeeBalance := payeeAccount.Balance
 
-func getClientPayeeAccount(accountID string) (*account.Account, *gorm.DB, error) {
-	newAccount := account.NewAccount()
-
-	accountDbObject := database.DB.Table("accounts").
-		Where("id = ?", accountID).
-		First(&newAccount)
-
-	if accountDbObject.Error != nil {
-		customError := errors.New(responses.PayeeAccountNotFound)
-		return newAccount, accountDbObject, customError
+	if !isEnoughFunds(senderBalance, amount) {
+		customError := errors.New(responses.InsufficientFunds)
+		return customError
 	}
 
-	return newAccount, accountDbObject, nil
+	newSenderBalance := senderBalance - amount
+	newPayeeBalance := payeeBalance + amount
+
+	senderAccountDbObject, err := s.rTransferAccount.GetAccountDbObject(senderAccountId)
+	if err != nil {
+		return err
+	}
+
+	payeeAccountDbObject, err := s.rTransferAccount.GetAccountDbObject(payeeAccountId)
+	if err != nil {
+		return err
+	}
+
+	err = s.rTransferAccount.UpdateAccountBalanceDbObject(senderAccountDbObject, newSenderBalance)
+	if err != nil {
+		return err
+	}
+
+	err = s.rTransferAccount.UpdateAccountBalanceDbObject(payeeAccountDbObject, newPayeeBalance)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func isTheSameAccountID(senderAccountID, payeeAccountID uint) bool {
-	return senderAccountID == payeeAccountID
+func (s *TransferService) personalTransfer(userId uint, transfer *domain.Transfer) error {
+	senderAccountId := transfer.SenderAccountId
+	payeeAccountId := transfer.PayeeAccountId
+	amount := transfer.Amount
+
+	senderAccount, err := s.rTransferAccount.GetSenderAccount(userId, senderAccountId)
+	if err != nil {
+		return err
+	}
+
+	payeeAccount, err := s.rTransferAccount.GetPersonalPayeeAccount(userId, payeeAccountId)
+	if err != nil {
+		return err
+	}
+
+	if isSameAccountId(senderAccountId, payeeAccountId) {
+		customError := errors.New(responses.SenderIsPayee)
+		return customError
+	}
+
+	senderBalance := senderAccount.Balance
+	payeeBalance := payeeAccount.Balance
+
+	if !isEnoughFunds(senderBalance, amount) {
+		customError := errors.New(responses.InsufficientFunds)
+		return customError
+	}
+
+	newSenderBalance := senderBalance - amount
+	newPayeeBalance := payeeBalance + amount
+
+	senderAccountDbObject, err := s.rTransferAccount.GetAccountDbObject(senderAccountId)
+	if err != nil {
+		return err
+	}
+
+	payeeAccountDbObject, err := s.rTransferAccount.GetAccountDbObject(payeeAccountId)
+	if err != nil {
+		return err
+	}
+
+	err = s.rTransferAccount.UpdateAccountBalanceDbObject(senderAccountDbObject, newSenderBalance)
+	if err != nil {
+		return err
+	}
+
+	err = s.rTransferAccount.UpdateAccountBalanceDbObject(payeeAccountDbObject, newPayeeBalance)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func isTheSameAccountOwner(senderUserID, payeeAccountID uint) bool {
-	return senderUserID == payeeAccountID
+func isSameAccountId(senderAccountId uint, payeeAccountId uint) bool {
+	return senderAccountId == payeeAccountId
 }
 
-func isEnoughFunds(account *account.Account, amount int) bool {
-	return account.Balance-amount >= 0
+func isSameAccountOwner(senderUserId uint, payeeAccountId uint) bool {
+	return senderUserId == payeeAccountId
+}
+
+func isEnoughFunds(balance int, amount int) bool {
+	return balance-amount >= 0
 }

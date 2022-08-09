@@ -1,54 +1,61 @@
 package service
 
 import (
-	"errors"
-	"github.com/golang-jwt/jwt/v4"
-	"github.com/vaberof/banking_app/internal/app/database"
-	"github.com/vaberof/banking_app/internal/app/domain/deposit"
-	"github.com/vaberof/banking_app/internal/pkg/responses"
+	"github.com/vaberof/banking_app/internal/app/domain"
+	"github.com/vaberof/banking_app/internal/app/repository"
 )
 
-func CreateDeposit(senderUserID uint, senderUsername string, senderAccountID, payeeID, payeeAccountID uint, amount int, transferType string) *deposit.Deposit {
-	newDeposit := deposit.NewDeposit()
-
-	newDeposit.SetSenderID(senderUserID)
-	newDeposit.SetSenderUsername(senderUsername)
-	newDeposit.SetSenderAccountID(senderAccountID)
-	newDeposit.SetPayeeID(payeeID)
-	newDeposit.SetPayeeAccountID(payeeAccountID)
-	newDeposit.SetAmount(amount)
-	newDeposit.SetType(transferType)
-
-	return newDeposit
+type DepositService struct {
+	rDeposit       repository.Deposit
+	rUserFinder    repository.UserFinder
+	rAccountFinder repository.AccountFinder
 }
 
-func CreateDepositInDatabase(deposit *deposit.Deposit) {
-	database.DB.Create(&deposit)
+func NewDepositService(rDeposit repository.Deposit, rUserFinder repository.UserFinder, rAccountFinder repository.AccountFinder) *DepositService {
+	return &DepositService{
+		rDeposit:       rDeposit,
+		rUserFinder:    rUserFinder,
+		rAccountFinder: rAccountFinder,
+	}
 }
 
-func GetDepositData(data map[string]string, claims *jwt.RegisteredClaims) (string, uint) {
-	sender, _ := FindUserById(claims.Issuer)
-	payeeAccount, _ := FindAccountByID(data["to_account"])
-	payee, _ := FindUserByUsername(payeeAccount.Owner)
+func (s *DepositService) TransformTransferToDeposit(userId uint, transfer *domain.Transfer) (*domain.Deposit, error) {
+	deposit := domain.NewDeposit()
 
-	senderUsername := sender.Username
-
-	payeeID := payee.ID
-
-	return senderUsername, payeeID
-}
-
-func GetUserDeposits(claims *jwt.RegisteredClaims) (*deposit.Deposits, error) {
-	var deposits *deposit.Deposits
-
-	database.DB.Table("deposits").Where("payee_id = ?", claims.Issuer).Find(&deposits)
-
-	dereferenceDeposits := *deposits
-
-	if len(dereferenceDeposits) == 0 {
-		customError := errors.New(responses.DepositsNotFound)
-		return deposits, customError
+	senderUser, err := s.rUserFinder.GetUserById(userId)
+	if err != nil {
+		return nil, err
 	}
 
+	payeeAccount, err := s.rAccountFinder.GetAccountById(transfer.PayeeAccountId)
+	if err != nil {
+		return nil, err
+	}
+
+	payeeUser, err := s.rUserFinder.GetUserById(payeeAccount.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	deposit.SetSenderId(senderUser.Id)
+	deposit.SetSenderUsername(senderUser.Username)
+	deposit.SetSenderAccountId(transfer.SenderAccountId)
+	deposit.SetPayeeId(payeeUser.Id)
+	deposit.SetPayeeAccountId(transfer.PayeeAccountId)
+	deposit.SetAmount(transfer.Amount)
+	deposit.SetType(transfer.Type)
+
+	return deposit, nil
+}
+
+func (s *DepositService) CreateDeposit(deposit *domain.Deposit) error {
+	return s.rDeposit.CreateDeposit(deposit)
+}
+
+func (s *DepositService) GetDeposits(userId uint) (*domain.Deposits, error) {
+	deposits, err := s.rDeposit.GetDeposits(userId)
+	if err != nil {
+		return nil, err
+	}
 	return deposits, nil
 }

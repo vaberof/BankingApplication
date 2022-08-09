@@ -2,22 +2,29 @@ package handler
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/vaberof/banking_app/internal/app/service"
 )
 
-type Handler struct{}
+type Handler struct {
+	services *service.Service
+}
+
+func NewHandler(services *service.Service) *Handler {
+	return &Handler{services: services}
+}
 
 func (h *Handler) InitRoutes(config fiber.Config) *fiber.App {
 	app := fiber.New(config)
 
-	app.Post("/signup", h.Signup)
-	app.Post("/login", h.Login)
-	app.Post("/logout", h.Logout)
-	app.Get("/balance", h.GetBalance)
-	app.Post("/account", h.CreateAccount)
-	app.Delete("/account", h.DeleteAccount)
-	app.Post("/transfer", h.MakeTransfer)
-	app.Get("/transfers", h.GetTransfers)
-	app.Get("/deposits", h.GetDeposits)
+	app.Post("/signup", h.signUp)
+	app.Post("/auth", h.login)
+	app.Post("/logout", h.logout)
+	app.Get("/balance", h.getBalance)
+	app.Post("/account", h.createAccount)
+	app.Delete("/account", h.deleteAccount)
+	app.Post("/transfer", h.transfer)
+	app.Get("/transfers", h.getTransfers)
+	app.Get("/deposits", h.getDeposits)
 
 	return app
 }

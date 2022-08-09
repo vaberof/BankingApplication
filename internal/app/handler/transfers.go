@@ -3,14 +3,14 @@ package handler
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/vaberof/banking_app/internal/app/service"
 	"github.com/vaberof/banking_app/internal/pkg/responses"
+	"github.com/vaberof/banking_app/internal/pkg/typeconv"
 )
 
-func (h *Handler) GetTransfers(c *fiber.Ctx) error {
-	cookie := c.Cookies("jwt")
+func (h *Handler) getTransfers(c *fiber.Ctx) error {
+	jwtToken := c.Cookies("jwt")
 
-	token, err := service.ParseJwtToken(cookie)
+	token, err := h.services.Authorization.ParseJwtToken(jwtToken)
 
 	if err != nil {
 		c.Status(fiber.StatusUnauthorized)
@@ -21,7 +21,15 @@ func (h *Handler) GetTransfers(c *fiber.Ctx) error {
 
 	claims := token.Claims.(*jwt.RegisteredClaims)
 
-	transfers, err := service.GetUserTransfers(claims)
+	userId, err := typeconv.ConvertStringIdToUintId(claims.Issuer)
+	if err != nil {
+		c.Status(fiber.StatusInternalServerError)
+		return c.JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	transfers, err := h.services.Transfer.GetTransfers(userId)
 	if err != nil {
 		c.Status(fiber.StatusNotFound)
 		return c.JSON(fiber.Map{

@@ -1,12 +1,10 @@
-package account
-
-import "gorm.io/gorm"
+package domain
 
 type Accounts []*Account
 
 type Account struct {
-	gorm.Model
-	UserID  uint
+	Id      uint `gorm:"primary"`
+	UserId  uint
 	Owner   string
 	Type    string
 	Balance int
@@ -16,15 +14,15 @@ func NewAccount() *Account {
 	return &Account{}
 }
 
-func (a *Account) SetUserID(userID uint) {
-	a.UserID = userID
+func (a *Account) SetUserId(userId uint) {
+	a.UserId = userId
 }
 
 func (a *Account) SetOwner(username string) {
 	a.Owner = username
 }
 
-func (a *Account) SetMainAccountType() {
+func (a *Account) SetInitialMainAccountType() {
 	a.Type = "Main"
 }
 

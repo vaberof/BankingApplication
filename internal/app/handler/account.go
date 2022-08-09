@@ -3,15 +3,15 @@ package handler
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/vaberof/banking_app/internal/app/service"
+	"github.com/vaberof/banking_app/internal/app/domain"
 	"github.com/vaberof/banking_app/internal/pkg/responses"
+	"github.com/vaberof/banking_app/internal/pkg/typeconv"
 )
 
-func (h *Handler) CreateAccount(c *fiber.Ctx) error {
-	cookie := c.Cookies("jwt")
+func (h *Handler) createAccount(c *fiber.Ctx) error {
+	jwtToken := c.Cookies("jwt")
 
-	token, err := service.ParseJwtToken(cookie)
-
+	token, err := h.services.Authorization.ParseJwtToken(jwtToken)
 	if err != nil {
 		c.Status(fiber.StatusUnauthorized)
 		return c.JSON(fiber.Map{
@@ -21,32 +21,53 @@ func (h *Handler) CreateAccount(c *fiber.Ctx) error {
 
 	claims := token.Claims.(*jwt.RegisteredClaims)
 
-	var data map[string]string
+	var input domain.Account
 
-	err = c.BodyParser(&data)
+	err = c.BodyParser(&input)
 	if err != nil {
-		return err
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": responses.FailedToParseBody,
+		})
 	}
 
-	accountType := data["type"]
-
-	if service.IsEmptyAccountType(accountType) {
-		c.Status(fiber.StatusConflict)
+	if h.services.AccountValidator.IsEmptyAccountType(input.Type) {
+		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{
 			"message": responses.EmptyAccountType,
 		})
 	}
 
-	_, err = service.FindAccountByType(accountType, claims)
-	if err == nil {
-		c.Status(fiber.StatusConflict)
+	userId, err := typeconv.ConvertStringIdToUintId(claims.Issuer)
+	if err != nil {
+		c.Status(fiber.StatusInternalServerError)
+		return c.JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	if err = h.services.AccountValidator.AccountExists(userId, input.Type); err == nil {
+		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{
 			"message": responses.AccountAlreadyExists,
 		})
 	}
 
-	account := service.CreateCustomAccount(accountType, claims)
-	service.CreateAccountInDatabase(account)
+	user, err := h.services.UserFinder.GetUserById(userId)
+	if err != nil {
+		c.Status(fiber.StatusNotFound)
+		return c.JSON(fiber.Map{
+			"message": responses.UserNotfound,
+		})
+	}
+
+	err = h.services.Account.CreateCustomAccount(user.Id, user.Username, input.Type)
+	if err != nil {
+		c.Status(fiber.StatusInternalServerError)
+		return c.JSON(fiber.Map{
+			"message": responses.FailedCreateAccount,
+		})
+	}
 
 	c.Status(fiber.StatusOK)
 	return c.JSON(fiber.Map{
@@ -54,10 +75,10 @@ func (h *Handler) CreateAccount(c *fiber.Ctx) error {
 	})
 }
 
-func (h *Handler) DeleteAccount(c *fiber.Ctx) error {
-	cookie := c.Cookies("jwt")
+func (h *Handler) deleteAccount(c *fiber.Ctx) error {
+	jwtToken := c.Cookies("jwt")
 
-	token, err := service.ParseJwtToken(cookie)
+	token, err := h.services.Authorization.ParseJwtToken(jwtToken)
 
 	if err != nil {
 		c.Status(fiber.StatusUnauthorized)
@@ -68,23 +89,39 @@ func (h *Handler) DeleteAccount(c *fiber.Ctx) error {
 
 	claims := token.Claims.(*jwt.RegisteredClaims)
 
-	var data map[string]string
+	var input domain.Account
 
-	err = c.BodyParser(&data)
+	err = c.BodyParser(&input)
 	if err != nil {
-		return err
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": responses.FailedToParseBody,
+		})
 	}
 
-	accountType := data["type"]
+	if h.services.AccountValidator.IsEmptyAccountType(input.Type) {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": responses.EmptyAccountType,
+		})
+	}
 
-	if service.IsMainAccountType(accountType) {
-		c.Status(fiber.StatusConflict)
+	if h.services.AccountValidator.IsMainAccountType(input.Type) {
+		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{
 			"message": responses.FailedDeleteMainAccount,
 		})
 	}
 
-	account, err := service.FindAccountByType(accountType, claims)
+	userId, err := typeconv.ConvertStringIdToUintId(claims.Issuer)
+	if err != nil {
+		c.Status(fiber.StatusInternalServerError)
+		return c.JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	account, err := h.services.AccountFinder.GetAccountByType(userId, input.Type)
 	if err != nil {
 		c.Status(fiber.StatusNotFound)
 		return c.JSON(fiber.Map{
@@ -92,14 +129,20 @@ func (h *Handler) DeleteAccount(c *fiber.Ctx) error {
 		})
 	}
 
-	if !service.IsZeroBalance(account) {
-		c.Status(fiber.StatusInternalServerError)
+	if !h.services.AccountValidator.IsZeroBalance(account.Balance) {
+		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{
 			"message": responses.FailedDeleteNonZeroBalanceAccount,
 		})
 	}
 
-	service.DeleteAccountFromDatabase(account)
+	err = h.services.Account.DeleteAccount(account)
+	if err != nil {
+		c.Status(fiber.StatusInternalServerError)
+		return c.JSON(fiber.Map{
+			"message": responses.FailedDeleteAccount,
+		})
+	}
 
 	c.Status(fiber.StatusOK)
 	return c.JSON(fiber.Map{

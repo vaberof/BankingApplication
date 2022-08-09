@@ -2,36 +2,57 @@ package handler
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/vaberof/banking_app/internal/app/service"
+	"github.com/vaberof/banking_app/internal/app/domain"
 	"github.com/vaberof/banking_app/internal/pkg/responses"
 )
 
-func (h *Handler) Signup(c *fiber.Ctx) error {
-	var data map[string]string
+func (h *Handler) signUp(c *fiber.Ctx) error {
+	var input domain.User
 
-	err := c.BodyParser(&data)
+	err := c.BodyParser(&input)
 	if err != nil {
-		return err
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": responses.FailedToParseBody,
+		})
 	}
 
-	inputUsername := data["username"]
+	if h.services.AuthorizationValidator.IsEmptyUsername(input.Username) {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": responses.EmptyUsername,
+		})
+	}
 
-	_, err = service.GetUser(data)
-	if err == nil {
-		c.Status(fiber.StatusConflict)
+	if h.services.AuthorizationValidator.IsEmptyPassword(input.Password) {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": responses.EmptyPassword,
+		})
+	}
+
+	if err = h.services.AuthorizationValidator.UserExists(input.Username); err == nil {
+		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{
 			"message": responses.UserAlreadyExists,
 		})
 	}
 
-	inputPassword := data["password"]
-	hashedPassword := service.HashPassword(inputPassword)
+	err = h.services.Authorization.CreateUser(&input)
+	if err != nil {
+		c.Status(fiber.StatusInternalServerError)
+		return c.JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 
-	user := service.CreateUser(inputUsername, hashedPassword)
-	service.CreateUserInDatabase(user)
-
-	userInitialAccount := service.CreateInitialAccount(user.ID, user.Username)
-	service.CreateAccountInDatabase(userInitialAccount)
+	err = h.services.Account.CreateInitialAccount(input.Id, input.Username)
+	if err != nil {
+		c.Status(fiber.StatusInternalServerError)
+		return c.JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 
 	c.Status(fiber.StatusOK)
 	return c.JSON(fiber.Map{

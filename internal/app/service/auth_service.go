@@ -3,83 +3,32 @@ package service
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/vaberof/banking_app/internal/app/database"
-	"github.com/vaberof/banking_app/internal/app/domain/user"
+	"github.com/vaberof/banking_app/internal/app/domain"
+	"github.com/vaberof/banking_app/internal/app/repository"
 	"golang.org/x/crypto/bcrypt"
 	"os"
 	"strconv"
 	"time"
 )
 
-func CreateUser(inputUsername string, hashedPassword []byte) *user.User {
-	newUser := user.NewUser()
-
-	newUser.SetUsername(inputUsername)
-	newUser.SetPassword(hashedPassword)
-
-	return newUser
+type AuthService struct {
+	repos repository.Authorization
 }
 
-func CreateUserInDatabase(user *user.User) {
-	database.DB.Create(&user)
+func NewAuthService(repos repository.Authorization) *AuthService {
+	return &AuthService{repos: repos}
 }
 
-func GetUser(data map[string]string) (*user.User, error) {
-	newUser := user.NewUser()
-
-	result := database.DB.Table("users").Where("username = ?", data["username"]).First(&newUser)
-	if result.Error != nil {
-		return newUser, result.Error
-	}
-	return newUser, nil
+func (s *AuthService) CreateUser(user *domain.User) error {
+	user.Password = generatePasswordHash(user.Password)
+	return s.repos.CreateUser(user)
 }
 
-func FindUserById(userID string) (*user.User, error) {
-	newUser := user.NewUser()
+func (s *AuthService) GenerateJwtToken(userId uint) (string, error) {
+	tokenWithClaims := generateJwtClaims(userId)
 
-	result := database.DB.Table("users").Where("id = ?", userID).First(&newUser)
-	if result.Error != nil {
-		return newUser, result.Error
-	}
-	return newUser, nil
-}
-
-func FindUserByUsername(username string) (*user.User, error) {
-	newUser := user.NewUser()
-
-	result := database.DB.Table("users").Where("username = ?", username).First(&newUser)
-	if result.Error != nil {
-		return newUser, result.Error
-	}
-	return newUser, nil
-}
-
-func IsCorrectPassword(hashedPassword []byte, password string) bool {
-	if err := bcrypt.CompareHashAndPassword(hashedPassword, []byte(password)); err != nil {
-		return false
-	}
-	return true
-}
-
-func HashPassword(password string) []byte {
-	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return hashedPassword
-}
-
-func CreateJwtClaims(user *user.User) *jwt.Token {
-	claims := jwt.NewWithClaims(
-		jwt.SigningMethodHS256,
-		jwt.RegisteredClaims{
-			Issuer:    strconv.Itoa(int(user.ID)),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
-		})
-
-	return claims
-}
-
-func CreateJwtToken(claims *jwt.Token) (string, error) {
 	secretKey := os.Getenv("secret_key")
-	token, err := claims.SignedString([]byte(secretKey))
+	token, err := tokenWithClaims.SignedString([]byte(secretKey))
 	if err != nil {
 		return token, err
 	}
@@ -87,29 +36,7 @@ func CreateJwtToken(claims *jwt.Token) (string, error) {
 	return token, nil
 }
 
-func CreateCookie(token string) *fiber.Cookie {
-
-	cookie := fiber.Cookie{
-		Name:     "jwt",
-		Value:    token,
-		Expires:  time.Now().Add(24 * time.Hour),
-		HTTPOnly: true,
-	}
-
-	return &cookie
-}
-
-func RemoveCookie() *fiber.Cookie {
-	cookie := fiber.Cookie{
-		Name:     "jwt",
-		Value:    "",
-		Expires:  time.Now().Add(-time.Hour),
-		HTTPOnly: true,
-	}
-	return &cookie
-}
-
-func ParseJwtToken(cookie string) (*jwt.Token, error) {
+func (s *AuthService) ParseJwtToken(cookie string) (*jwt.Token, error) {
 	token, err := jwt.ParseWithClaims(cookie, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
 		secretKey := os.Getenv("secret_key")
 		return []byte(secretKey), nil
@@ -120,4 +47,41 @@ func ParseJwtToken(cookie string) (*jwt.Token, error) {
 	}
 
 	return token, nil
+}
+
+func (s *AuthService) GenerateCookie(token string) *fiber.Cookie {
+	cookie := fiber.Cookie{
+		Name:     "jwt",
+		Value:    token,
+		Expires:  time.Now().Add(24 * time.Hour),
+		HTTPOnly: true,
+	}
+
+	return &cookie
+}
+
+func (s *AuthService) RemoveCookie() *fiber.Cookie {
+	cookie := fiber.Cookie{
+		Name:     "jwt",
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour),
+		HTTPOnly: true,
+	}
+	return &cookie
+}
+
+func generatePasswordHash(password string) string {
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(hashedPassword)
+}
+
+func generateJwtClaims(userId uint) *jwt.Token {
+	tokenWithClaims := jwt.NewWithClaims(
+		jwt.SigningMethodHS256,
+		jwt.RegisteredClaims{
+			Issuer:    strconv.Itoa(int(userId)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+		})
+
+	return tokenWithClaims
 }

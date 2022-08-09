@@ -4,10 +4,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
-	"github.com/vaberof/banking_app/internal/app/database"
 	"github.com/vaberof/banking_app/internal/app/handler"
+	"github.com/vaberof/banking_app/internal/app/repository"
+	"github.com/vaberof/banking_app/internal/app/service"
 	"github.com/vaberof/banking_app/internal/pkg/http/server"
 	"log"
+	"os"
 	"time"
 )
 
@@ -20,17 +22,31 @@ func main() {
 		log.Fatalf("failed loading environment variables: %s", err.Error())
 	}
 
-	config := fiber.Config{
-		WriteTimeout: 10 * time.Second,
-		ReadTimeout:  10 * time.Second,
+	db, err := repository.NewPostgresDb(&repository.Config{
+		Host:     viper.GetString("db.host"),
+		Port:     viper.GetString("db.port"),
+		Name:     viper.GetString("db.name"),
+		User:     viper.GetString("db.user"),
+		Password: os.Getenv("db_password"),
+	})
+	if err != nil {
+		log.Fatalf("cannot connect to database %s", err.Error())
 	}
 
-	handlers := new(handler.Handler)
-	app := handlers.InitRoutes(config)
+	repos := repository.NewRepository(db)
+	services := service.NewService(repos)
+	handlers := handler.NewHandler(services)
 
-	database.Connect()
+	app := handlers.InitRoutes(fiber.Config{
+		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  10 * time.Second,
+	})
 
-	if err := server.Run(viper.GetString("server.host"), viper.GetString("server.port"), app); err != nil {
+	if err = repos.MakeMigrations(db); err != nil {
+		log.Fatalf("cannot make migrations %s", err.Error())
+	}
+
+	if err = server.Run(viper.GetString("server.host"), viper.GetString("server.port"), app); err != nil {
 		log.Fatalf("cannot run server: %s", err.Error())
 	}
 }
