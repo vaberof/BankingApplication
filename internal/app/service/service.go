@@ -5,6 +5,12 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/vaberof/banking_app/internal/app/domain"
 	"github.com/vaberof/banking_app/internal/app/repository"
+	"github.com/vaberof/banking_app/internal/app/service/accountserv"
+	"github.com/vaberof/banking_app/internal/app/service/authserv"
+	"github.com/vaberof/banking_app/internal/app/service/balanceserv"
+	"github.com/vaberof/banking_app/internal/app/service/depositserv"
+	"github.com/vaberof/banking_app/internal/app/service/transferserv"
+	"github.com/vaberof/banking_app/internal/app/service/userserv"
 )
 
 type Authorization interface {
@@ -86,14 +92,14 @@ type Service struct {
 
 func NewService(repos *repository.Repository) *Service {
 	return &Service{
-		Authorization:          NewAuthService(repos.Authorization),
-		AuthorizationValidator: NewAuthValidationService(repos.AuthorizationValidator),
-		UserFinder:             NewUserFinderService(repos.UserFinder),
-		Account:                NewAccountService(repos.Account),
-		AccountValidator:       NewAccountValidationService(repos.AccountValidator),
-		AccountFinder:          NewAccountFinderService(repos.AccountFinder),
-		Balance:                NewBalanceService(repos.Balance),
-		Transfer:               NewTransferService(repos.Transfer, repos.TransferAccount, repos.AccountFinder),
-		Deposit:                NewDepositService(repos.Deposit, repos.UserFinder, repos.AccountFinder),
+		Authorization:          authserv.NewAuthService(repos.Authorization),
+		AuthorizationValidator: authserv.NewAuthValidationService(repos.AuthorizationValidator),
+		UserFinder:             userserv.NewUserFinderService(repos.UserFinder),
+		Account:                accountserv.NewAccountService(repos.Account),
+		AccountValidator:       accountserv.NewAccountValidationService(repos.AccountValidator),
+		AccountFinder:          accountserv.NewAccountFinderService(repos.AccountFinder),
+		Balance:                balanceserv.NewBalanceService(repos.Balance),
+		Transfer:               transferserv.NewTransferService(repos.Transfer, repos.TransferAccount, repos.AccountFinder),
+		Deposit:                depositserv.NewDepositService(repos.Deposit, repos.UserFinder, repos.AccountFinder),
 	}
 }

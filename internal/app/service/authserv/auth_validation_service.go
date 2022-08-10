@@ -1,4 +1,4 @@
-package service
+package authserv
 
 import (
 	"github.com/vaberof/banking_app/internal/app/repository"

@@ -1,4 +1,4 @@
-package service
+package authserv
 
 import (
 	"github.com/gofiber/fiber/v2"

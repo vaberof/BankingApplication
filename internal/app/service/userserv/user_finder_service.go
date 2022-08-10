@@ -1,4 +1,4 @@
-package service
+package userserv
 
 import (
 	"github.com/vaberof/banking_app/internal/app/domain"

@@ -1,4 +1,4 @@
-package repository
+package accountpg
 
 import (
 	"github.com/vaberof/banking_app/internal/app/domain"

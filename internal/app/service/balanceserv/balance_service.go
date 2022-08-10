@@ -1,4 +1,4 @@
-package service
+package balanceserv
 
 import (
 	"github.com/vaberof/banking_app/internal/app/domain"

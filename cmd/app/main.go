@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/vaberof/banking_app/internal/app/handler"
 	"github.com/vaberof/banking_app/internal/app/repository"
+	"github.com/vaberof/banking_app/internal/app/repository/postgres"
 	"github.com/vaberof/banking_app/internal/app/service"
 	"github.com/vaberof/banking_app/internal/pkg/http/server"
 	"log"
@@ -22,7 +23,7 @@ func main() {
 		log.Fatalf("failed loading environment variables: %s", err.Error())
 	}
 
-	db, err := repository.NewPostgresDb(&repository.Config{
+	db, err := postgres.NewPostgresDb(&postgres.Config{
 		Host:     viper.GetString("db.host"),
 		Port:     viper.GetString("db.port"),
 		Name:     viper.GetString("db.name"),

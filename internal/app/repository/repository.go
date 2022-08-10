@@ -2,6 +2,12 @@ package repository
 
 import (
 	"github.com/vaberof/banking_app/internal/app/domain"
+	"github.com/vaberof/banking_app/internal/app/repository/postgres/accountpg"
+	"github.com/vaberof/banking_app/internal/app/repository/postgres/authpg"
+	"github.com/vaberof/banking_app/internal/app/repository/postgres/balancepg"
+	"github.com/vaberof/banking_app/internal/app/repository/postgres/depositpg"
+	"github.com/vaberof/banking_app/internal/app/repository/postgres/transferpg"
+	"github.com/vaberof/banking_app/internal/app/repository/postgres/userpg"
 	"gorm.io/gorm"
 )
 
@@ -85,16 +91,16 @@ type Repository struct {
 
 func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{
-		Authorization:          NewAuthPostgres(db),
-		AuthorizationValidator: NewAuthValidationPostgres(db),
-		UserFinder:             NewUserFinderPostgres(db),
-		Account:                NewAccountPostgres(db),
-		AccountValidator:       NewAccountValidationPostgres(db),
-		AccountFinder:          NewAccountFinderPostgres(db),
-		Balance:                NewBalancePostgres(db),
-		Transfer:               NewTransferPostgres(db),
-		TransferAccount:        NewTransferAccountPostgres(db),
-		Deposit:                NewDepositPostgres(db),
+		Authorization:          authpg.NewAuthPostgres(db),
+		AuthorizationValidator: authpg.NewAuthValidationPostgres(db),
+		UserFinder:             userpg.NewUserFinderPostgres(db),
+		Account:                accountpg.NewAccountPostgres(db),
+		AccountValidator:       accountpg.NewAccountValidationPostgres(db),
+		AccountFinder:          accountpg.NewAccountFinderPostgres(db),
+		Balance:                balancepg.NewBalancePostgres(db),
+		Transfer:               transferpg.NewTransferPostgres(db),
+		TransferAccount:        transferpg.NewTransferAccountPostgres(db),
+		Deposit:                depositpg.NewDepositPostgres(db),
 	}
 }
 
