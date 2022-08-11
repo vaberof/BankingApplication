@@ -14,6 +14,16 @@ import (
 // @Failure 401 {string} string responses.Unauthorized
 // @Router /logout [post]
 func (h *Handler) logout(c *fiber.Ctx) error {
+	jwtToken := c.Cookies("jwt")
+
+	_, err := h.services.Authorization.ParseJwtToken(jwtToken)
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": responses.Unauthorized,
+		})
+	}
+
 	cookie := h.services.Authorization.RemoveCookie()
 	c.Cookie(cookie)
 
