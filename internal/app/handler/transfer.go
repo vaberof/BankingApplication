@@ -74,10 +74,9 @@ func (h *Handler) transfer(c *fiber.Ctx) error {
 
 	err = h.services.Transfer.MakeTransfer(transfer)
 	if err != nil {
-		c.Status(fiber.StatusInternalServerError)
+		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{
-			"message": responses.FailedTransfer,
-			"error":   err.Error(),
+			"message": err.Error(),
 		})
 	}
 

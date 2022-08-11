@@ -21,6 +21,23 @@ func NewTransferService(rTransfer repository.Transfer, rTransferAccount reposito
 	}
 }
 
+func (s *TransferService) CreateTransfer(transfer *domain.Transfer) error {
+	return s.rTransfer.CreateTransfer(transfer)
+}
+
+func (s *TransferService) MakeTransfer(transfer *domain.Transfer) error {
+	transferType := transfer.Type
+	switch transferType {
+	case "client":
+		return s.clientTransfer(transfer)
+	case "personal":
+		return s.personalTransfer(transfer)
+	default:
+		customError := errors.New(responses.UnsupportedTransferType)
+		return customError
+	}
+}
+
 func (s *TransferService) TransformInputToTransfer(
 	senderId uint,
 	senderAccountId uint,
@@ -44,23 +61,6 @@ func (s *TransferService) TransformInputToTransfer(
 	transfer.SetType(transferType)
 
 	return transfer, nil
-}
-
-func (s *TransferService) MakeTransfer(transfer *domain.Transfer) error {
-	transferType := transfer.Type
-	switch transferType {
-	case "client":
-		return s.clientTransfer(transfer)
-	case "personal":
-		return s.personalTransfer(transfer)
-	default:
-		customError := errors.New(responses.UnsupportedTransferType)
-		return customError
-	}
-}
-
-func (s *TransferService) CreateTransfer(transfer *domain.Transfer) error {
-	return s.rTransfer.CreateTransfer(transfer)
 }
 
 func (s *TransferService) GetTransfers(userId uint) (*domain.Transfers, error) {

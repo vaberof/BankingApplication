@@ -8,10 +8,9 @@ const (
 
 	AccountAlreadyExists           = "account with this type already exists"
 	EmptyAccountType               = "account type cannot be empty"
-	Unauthorized                   = "user unauthorized"
+	Unauthorized                   = "unauthorized"
 	IncorrectUsernameAndOrPassword = "incorrect username and/or password"
 
-	FailedTransfer                    = "transaction is not possible"
 	FailedCreateAccount               = "cannot create account"
 	FailedDeleteMainAccount           = "cannot delete main account"
 	FailedDeleteAccount               = "cannot delete account"
@@ -27,8 +26,8 @@ const (
 	TransfersNotFound     = "transfers not found"
 	DepositsNotFound      = "deposits not found"
 
-	SenderIsPayee            = "you are trying to make a transfer to your own account"
-	InsufficientFunds        = "insufficient funds"
+	SenderIsPayee            = "cannot make transfer to your own account with this input transfer type"
+	InsufficientFunds        = "insufficient funds to make a transfer"
 	CannotTransferZeroAmount = "amount of transfer should be more than 0"
 	UnsupportedTransferType  = "unsupported transfer type"
 
