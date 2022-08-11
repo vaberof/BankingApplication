@@ -7,6 +7,16 @@ import (
 	"github.com/vaberof/banking_app/internal/pkg/typeconv"
 )
 
+// @Summary Get Deposits
+// @Tags Deposit
+// @Description get deposits
+// @ID gets all deposits
+// @Produce json
+// @Success 200 {object} domain.Deposits
+// @Failure 401 {object} error
+// @Failure 404 {object} error
+// @Failure 500 {object} error
+// @Router /deposits [get]
 func (h *Handler) getDeposits(c *fiber.Ctx) error {
 	jwtToken := c.Cookies("jwt")
 

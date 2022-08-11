@@ -6,6 +6,18 @@ import (
 	"github.com/vaberof/banking_app/internal/pkg/responses"
 )
 
+// @Summary SignIn
+// @Tags Auth
+// @Description authorization
+// @ID auth-user
+// @Accept json
+// @Produce json
+// @Param input body domain.User true "user info"
+// @Success 200 {string} string responses.Success
+// @Failure 400 {object} error
+// @Failure 404 {object} error
+// @Failure 500 {object} error
+// @Router /login [post]
 func (h *Handler) login(c *fiber.Ctx) error {
 	var input domain.User
 
@@ -19,10 +31,9 @@ func (h *Handler) login(c *fiber.Ctx) error {
 
 	user, err := h.services.UserFinder.GetUserByUsername(input.Username)
 	if err != nil {
-		c.Status(fiber.StatusBadRequest)
+		c.Status(fiber.StatusNotFound)
 		return c.JSON(fiber.Map{
-			// sending this response message instead of 'Not found' for secure reason
-			"message": responses.IncorrectUsernameAndOrPassword,
+			"message": responses.UserNotfound,
 		})
 	}
 

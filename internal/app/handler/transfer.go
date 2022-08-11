@@ -14,6 +14,19 @@ type inputTransfer struct {
 	Type            string `json:"transfer_type"`
 }
 
+// @Summary Make Transfer
+// @Tags Transfer
+// @Description make transfer
+// @ID make client or personal transfer
+// @Accept json
+// @Produce json
+// @Param input body inputTransfer true "user info"
+// @Success 200 {string} string responses.Success
+// @Failure 400 {object} error
+// @Failure 401 {object} error
+// @Failure 404 {object} error
+// @Failure 500 {object} error
+// @Router /transfer [post]
 func (h *Handler) transfer(c *fiber.Ctx) error {
 	jwtToken := c.Cookies("jwt")
 

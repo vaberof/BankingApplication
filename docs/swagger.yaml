@@ -1,0 +1,326 @@
+basePath: /
+definitions:
+  domain.Account:
+    properties:
+      balance:
+        type: integer
+      id:
+        type: integer
+      type:
+        type: string
+    type: object
+  domain.Deposit:
+    properties:
+      amount:
+        type: integer
+      payee_account_id:
+        type: integer
+      sender_account_id:
+        type: integer
+      sender_username:
+        type: string
+      transfer_type:
+        type: string
+    type: object
+  domain.Transfer:
+    properties:
+      amount:
+        type: integer
+      payee_account_id:
+        type: integer
+      payee_username:
+        type: string
+      sender_account_id:
+        type: integer
+      transfer_type:
+        type: string
+    type: object
+  domain.User:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  handler.inputAccount:
+    properties:
+      type:
+        type: string
+    type: object
+  handler.inputTransfer:
+    properties:
+      amount:
+        type: integer
+      payee_account_id:
+        type: integer
+      sender_account_id:
+        type: integer
+      transfer_type:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API Server for Mock Banking Application
+  title: Banking App
+  version: "1.0"
+paths:
+  /account:
+    delete:
+      consumes:
+      - application/json
+      description: delete bank account
+      operationId: delete-bank-account
+      parameters:
+      - description: account type
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handler.inputAccount'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Delete account
+      tags:
+      - Bank Account
+    post:
+      consumes:
+      - application/json
+      description: create new bank account
+      operationId: create-bank-account
+      parameters:
+      - description: account type
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handler.inputAccount'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Create bank account
+      tags:
+      - Bank Account
+  /balance:
+    get:
+      description: get all bank accounts
+      operationId: get-user-bank-accounts
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Account'
+            type: array
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Get Balance
+      tags:
+      - Balance
+  /deposits:
+    get:
+      description: get deposits
+      operationId: gets all deposits
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Deposit'
+            type: array
+        "401":
+          description: Unauthorized
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Get Deposits
+      tags:
+      - Deposit
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: authorization
+      operationId: auth-user
+      parameters:
+      - description: user info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/domain.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: SignIn
+      tags:
+      - Auth
+  /logout:
+    post:
+      description: exits from acc
+      operationId: logs out from account
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      summary: Logout
+      tags:
+      - Auth
+  /signup:
+    post:
+      consumes:
+      - application/json
+      description: create user
+      operationId: create-user
+      parameters:
+      - description: user info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/domain.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: SignUp
+      tags:
+      - Auth
+  /transfer:
+    post:
+      consumes:
+      - application/json
+      description: make transfer
+      operationId: make client or personal transfer
+      parameters:
+      - description: user info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handler.inputTransfer'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Make Transfer
+      tags:
+      - Transfer
+  /transfers:
+    get:
+      description: get transfers
+      operationId: gets all transfers
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Transfer'
+            type: array
+        "401":
+          description: Unauthorized
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Get Transfers
+      tags:
+      - Transfer
+swagger: "2.0"

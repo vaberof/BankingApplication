@@ -7,6 +7,17 @@ import (
 	"github.com/vaberof/banking_app/internal/pkg/typeconv"
 )
 
+// @Summary Get Balance
+// @Tags Balance
+// @Description get all bank accounts
+// @ID get-user-bank-accounts
+// @Produce json
+// @Success 200 {object} domain.Accounts
+// @Failure 400 {object} error
+// @Failure 401 {object} error
+// @Failure 404 {object} error
+// @Failure 500 {object} error
+// @Router /balance [get]
 func (h *Handler) getBalance(c *fiber.Ctx) error {
 	jwtToken := c.Cookies("jwt")
 

@@ -14,6 +14,17 @@ import (
 	"time"
 )
 
+// @title Banking App
+// @version 1.0
+// @description API Server for Mock Banking Application
+
+// @host localhost:8080
+// @BasePath /
+
+// @securityDefinition.apikey ApiKeyAuth
+// @in header
+// @name Authorization
+
 func main() {
 	if err := initConfig(); err != nil {
 		log.Fatalf("failed initializating configs: %s", err.Error())

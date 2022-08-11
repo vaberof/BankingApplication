@@ -3,7 +3,6 @@ package handler
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/vaberof/banking_app/internal/app/domain"
 	"github.com/vaberof/banking_app/internal/pkg/responses"
 	"github.com/vaberof/banking_app/internal/pkg/typeconv"
 )
@@ -12,6 +11,18 @@ type inputAccount struct {
 	Type string `json:"type"`
 }
 
+// @Summary Create bank account
+// @Tags Bank Account
+// @Description create new bank account
+// @ID create-bank-account
+// @Accept json
+// @Produce json
+// @Param input body inputAccount true "account type"
+// @Success 200 {string} string responses.Success
+// @Failure 400 {object} error
+// @Failure 404 {object} error
+// @Failure 500 {object} error
+// @Router /account [post]
 func (h *Handler) createAccount(c *fiber.Ctx) error {
 	jwtToken := c.Cookies("jwt")
 
@@ -79,6 +90,18 @@ func (h *Handler) createAccount(c *fiber.Ctx) error {
 	})
 }
 
+// @Summary Delete account
+// @Tags Bank Account
+// @Description delete bank account
+// @ID delete-bank-account
+// @Accept json
+// @Produce json
+// @Param input body inputAccount true "account type"
+// @Success 200 {string} string responses.Success
+// @Failure 400 {object} error
+// @Failure 404 {object} error
+// @Failure 500 {object} error
+// @Router /account [delete]
 func (h *Handler) deleteAccount(c *fiber.Ctx) error {
 	jwtToken := c.Cookies("jwt")
 
@@ -93,7 +116,7 @@ func (h *Handler) deleteAccount(c *fiber.Ctx) error {
 
 	claims := token.Claims.(*jwt.RegisteredClaims)
 
-	var input domain.Account
+	var input inputAccount
 
 	err = c.BodyParser(&input)
 	if err != nil {

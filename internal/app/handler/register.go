@@ -6,6 +6,18 @@ import (
 	"github.com/vaberof/banking_app/internal/pkg/responses"
 )
 
+// @Summary SignUp
+// @Tags Auth
+// @Description create user
+// @ID create-user
+// @Accept json
+// @Produce json
+// @Param input body domain.User true "user info"
+// @Success 200 {string} string responses.Success
+// @Failure 400 {object} error
+// @Failure 404 {object} error
+// @Failure 500 {object} error
+// @Router /signup [post]
 func (h *Handler) signUp(c *fiber.Ctx) error {
 	var input domain.User
 
@@ -42,7 +54,7 @@ func (h *Handler) signUp(c *fiber.Ctx) error {
 	if err != nil {
 		c.Status(fiber.StatusInternalServerError)
 		return c.JSON(fiber.Map{
-			"error": err.Error(),
+			"message": err.Error(),
 		})
 	}
 
@@ -50,7 +62,7 @@ func (h *Handler) signUp(c *fiber.Ctx) error {
 	if err != nil {
 		c.Status(fiber.StatusInternalServerError)
 		return c.JSON(fiber.Map{
-			"error": err.Error(),
+			"message": err.Error(),
 		})
 	}
 

@@ -2,6 +2,8 @@ package handler
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/swagger"
+	_ "github.com/vaberof/banking_app/docs"
 	"github.com/vaberof/banking_app/internal/app/service"
 )
 
@@ -16,8 +18,10 @@ func NewHandler(services *service.Service) *Handler {
 func (h *Handler) InitRoutes(config fiber.Config) *fiber.App {
 	app := fiber.New(config)
 
+	app.Get("/swagger/*", swagger.HandlerDefault)
+
 	app.Post("/signup", h.signUp)
-	app.Post("/auth", h.login)
+	app.Post("/login", h.login)
 	app.Post("/logout", h.logout)
 	app.Get("/balance", h.getBalance)
 	app.Post("/account", h.createAccount)
