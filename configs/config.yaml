@@ -3,7 +3,7 @@ server:
   port: "8080"
 
 db:
-  host: "localhost"
+  host: "ec2-54-75-26-218.eu-west-1.compute.amazonaws.com"
   port: "5432"
-  name: "banking_app"
-  user: "postgres"
+  name: "d62rsl3gbskf23"
+  user: "rkqvgfobhuuqlq"
