@@ -64,7 +64,7 @@ func main() {
 }
 
 func initConfig() error {
-	viper.AddConfigPath("github.com/vaberof/banking_app/configs")
+	viper.AddConfigPath("/github.com/vaberof/banking_app/configs")
 	viper.SetConfigName("config")
 	return viper.ReadInConfig()
 }
