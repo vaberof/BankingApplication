@@ -64,7 +64,10 @@ func main() {
 }
 
 func initConfig() error {
+	viper.SetConfigType("yaml")
+	log.Printf("config type settled")
 	viper.SetConfigFile("../../configs/config.yaml")
+	log.Printf("config file settled")
 
 	return viper.ReadInConfig()
 }
