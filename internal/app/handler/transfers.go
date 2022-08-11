@@ -9,7 +9,7 @@ import (
 
 // @Summary Get Transfers
 // @Tags Transfer
-// @Description get transfers
+// @Description Get all client/personal transfers you have made
 // @ID gets all transfers
 // @Produce json
 // @Success 200 {object} domain.Transfers

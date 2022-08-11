@@ -69,8 +69,8 @@ paths:
     delete:
       consumes:
       - application/json
-      description: delete bank account
-      operationId: delete-bank-account
+      description: Delete a bank account
+      operationId: deletes bank account
       parameters:
       - description: account type
         in: body
@@ -94,14 +94,14 @@ paths:
         "500":
           description: Internal Server Error
           schema: {}
-      summary: Delete account
+      summary: Delete a bank account
       tags:
       - Bank Account
     post:
       consumes:
       - application/json
-      description: create new bank account
-      operationId: create-bank-account
+      description: Create a new bank account
+      operationId: creates bank account
       parameters:
       - description: account type
         in: body
@@ -125,13 +125,13 @@ paths:
         "500":
           description: Internal Server Error
           schema: {}
-      summary: Create bank account
+      summary: Create a bank account
       tags:
       - Bank Account
   /balance:
     get:
-      description: get all bank accounts
-      operationId: get-user-bank-accounts
+      description: Get all bank accounts you have
+      operationId: gets user bank accounts
       produces:
       - application/json
       responses:
@@ -153,12 +153,13 @@ paths:
         "500":
           description: Internal Server Error
           schema: {}
-      summary: Get Balance
+      summary: Get balance
       tags:
       - Balance
   /deposits:
     get:
-      description: get deposits
+      description: Get the deposits made to your bank account(s) using personal or
+        client transfers
       operationId: gets all deposits
       produces:
       - application/json
@@ -178,15 +179,15 @@ paths:
         "500":
           description: Internal Server Error
           schema: {}
-      summary: Get Deposits
+      summary: Get deposits
       tags:
       - Deposit
   /login:
     post:
       consumes:
       - application/json
-      description: authorization
-      operationId: auth-user
+      description: Login into account
+      operationId: auth user
       parameters:
       - description: user info
         in: body
@@ -215,7 +216,7 @@ paths:
       - Auth
   /logout:
     post:
-      description: exits from acc
+      description: Logout from account
       operationId: logs out from account
       produces:
       - application/json
@@ -235,8 +236,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: create user
-      operationId: create-user
+      description: Create a new user
+      operationId: creates new user
       parameters:
       - description: user info
         in: body
@@ -267,10 +268,12 @@ paths:
     post:
       consumes:
       - application/json
-      description: make transfer
-      operationId: make client or personal transfer
+      description: |-
+        Make a transfer to own account with the transfer type "personal"
+        or to another client account with the transfer type "client"
+      operationId: makes transfer of client or personal type
       parameters:
-      - description: user info
+      - description: transfer info
         in: body
         name: input
         required: true
@@ -295,12 +298,12 @@ paths:
         "500":
           description: Internal Server Error
           schema: {}
-      summary: Make Transfer
+      summary: Make a transfer
       tags:
       - Transfer
   /transfers:
     get:
-      description: get transfers
+      description: Get all client/personal transfers you have made
       operationId: gets all transfers
       produces:
       - application/json

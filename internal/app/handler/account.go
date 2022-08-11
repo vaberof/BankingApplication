@@ -11,10 +11,10 @@ type inputAccount struct {
 	Type string `json:"type"`
 }
 
-// @Summary Create bank account
+// @Summary Create a bank account
 // @Tags Bank Account
-// @Description create new bank account
-// @ID create-bank-account
+// @Description Create a new bank account
+// @ID creates bank account
 // @Accept json
 // @Produce json
 // @Param input body inputAccount true "account type"
@@ -90,10 +90,10 @@ func (h *Handler) createAccount(c *fiber.Ctx) error {
 	})
 }
 
-// @Summary Delete account
+// @Summary Delete a bank account
 // @Tags Bank Account
-// @Description delete bank account
-// @ID delete-bank-account
+// @Description Delete a bank account
+// @ID deletes bank account
 // @Accept json
 // @Produce json
 // @Param input body inputAccount true "account type"

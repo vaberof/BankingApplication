@@ -14,13 +14,14 @@ type inputTransfer struct {
 	Type            string `json:"transfer_type"`
 }
 
-// @Summary Make Transfer
+// @Summary Make a transfer
 // @Tags Transfer
-// @Description make transfer
-// @ID make client or personal transfer
+// @Description Make a transfer to own account with the transfer type "personal"
+// @Description or to another client account with the transfer type "client"
+// @ID makes transfer of client or personal type
 // @Accept json
 // @Produce json
-// @Param input body inputTransfer true "user info"
+// @Param input body inputTransfer true "transfer info"
 // @Success 200 {string} string responses.Success
 // @Failure 400 {object} error
 // @Failure 401 {object} error

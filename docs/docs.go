@@ -18,7 +18,7 @@ const docTemplate = `{
     "paths": {
         "/account": {
             "post": {
-                "description": "create new bank account",
+                "description": "Create a new bank account",
                 "consumes": [
                     "application/json"
                 ],
@@ -28,8 +28,8 @@ const docTemplate = `{
                 "tags": [
                     "Bank Account"
                 ],
-                "summary": "Create bank account",
-                "operationId": "create-bank-account",
+                "summary": "Create a bank account",
+                "operationId": "creates bank account",
                 "parameters": [
                     {
                         "description": "account type",
@@ -63,7 +63,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "delete bank account",
+                "description": "Delete a bank account",
                 "consumes": [
                     "application/json"
                 ],
@@ -73,8 +73,8 @@ const docTemplate = `{
                 "tags": [
                     "Bank Account"
                 ],
-                "summary": "Delete account",
-                "operationId": "delete-bank-account",
+                "summary": "Delete a bank account",
+                "operationId": "deletes bank account",
                 "parameters": [
                     {
                         "description": "account type",
@@ -110,15 +110,15 @@ const docTemplate = `{
         },
         "/balance": {
             "get": {
-                "description": "get all bank accounts",
+                "description": "Get all bank accounts you have",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Balance"
                 ],
-                "summary": "Get Balance",
-                "operationId": "get-user-bank-accounts",
+                "summary": "Get balance",
+                "operationId": "gets user bank accounts",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -150,14 +150,14 @@ const docTemplate = `{
         },
         "/deposits": {
             "get": {
-                "description": "get deposits",
+                "description": "Get the deposits made to your bank account(s) using personal or client transfers",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Deposit"
                 ],
-                "summary": "Get Deposits",
+                "summary": "Get deposits",
                 "operationId": "gets all deposits",
                 "responses": {
                     "200": {
@@ -186,7 +186,7 @@ const docTemplate = `{
         },
         "/login": {
             "post": {
-                "description": "authorization",
+                "description": "Login into account",
                 "consumes": [
                     "application/json"
                 ],
@@ -197,7 +197,7 @@ const docTemplate = `{
                     "Auth"
                 ],
                 "summary": "SignIn",
-                "operationId": "auth-user",
+                "operationId": "auth user",
                 "parameters": [
                     {
                         "description": "user info",
@@ -233,7 +233,7 @@ const docTemplate = `{
         },
         "/logout": {
             "post": {
-                "description": "exits from acc",
+                "description": "Logout from account",
                 "produces": [
                     "application/json"
                 ],
@@ -260,7 +260,7 @@ const docTemplate = `{
         },
         "/signup": {
             "post": {
-                "description": "create user",
+                "description": "Create a new user",
                 "consumes": [
                     "application/json"
                 ],
@@ -271,7 +271,7 @@ const docTemplate = `{
                     "Auth"
                 ],
                 "summary": "SignUp",
-                "operationId": "create-user",
+                "operationId": "creates new user",
                 "parameters": [
                     {
                         "description": "user info",
@@ -307,7 +307,7 @@ const docTemplate = `{
         },
         "/transfer": {
             "post": {
-                "description": "make transfer",
+                "description": "Make a transfer to own account with the transfer type \"personal\"\nor to another client account with the transfer type \"client\"",
                 "consumes": [
                     "application/json"
                 ],
@@ -317,11 +317,11 @@ const docTemplate = `{
                 "tags": [
                     "Transfer"
                 ],
-                "summary": "Make Transfer",
-                "operationId": "make client or personal transfer",
+                "summary": "Make a transfer",
+                "operationId": "makes transfer of client or personal type",
                 "parameters": [
                     {
-                        "description": "user info",
+                        "description": "transfer info",
                         "name": "input",
                         "in": "body",
                         "required": true,
@@ -358,7 +358,7 @@ const docTemplate = `{
         },
         "/transfers": {
             "get": {
-                "description": "get transfers",
+                "description": "Get all client/personal transfers you have made",
                 "produces": [
                     "application/json"
                 ],

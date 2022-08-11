@@ -7,7 +7,7 @@ import (
 
 // @Summary Logout
 // @Tags Auth
-// @Description exits from acc
+// @Description Logout from account
 // @ID logs out from account
 // @Produce json
 // @Success 200 {string} string responses.Success

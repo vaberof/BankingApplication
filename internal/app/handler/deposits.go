@@ -7,9 +7,9 @@ import (
 	"github.com/vaberof/banking_app/internal/pkg/typeconv"
 )
 
-// @Summary Get Deposits
+// @Summary Get deposits
 // @Tags Deposit
-// @Description get deposits
+// @Description Get the deposits made to your bank account(s) using personal or client transfers
 // @ID gets all deposits
 // @Produce json
 // @Success 200 {object} domain.Deposits

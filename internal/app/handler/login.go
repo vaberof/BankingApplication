@@ -8,8 +8,8 @@ import (
 
 // @Summary SignIn
 // @Tags Auth
-// @Description authorization
-// @ID auth-user
+// @Description Login into account
+// @ID auth user
 // @Accept json
 // @Produce json
 // @Param input body domain.User true "user info"

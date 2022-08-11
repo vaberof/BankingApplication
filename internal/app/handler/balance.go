@@ -7,10 +7,10 @@ import (
 	"github.com/vaberof/banking_app/internal/pkg/typeconv"
 )
 
-// @Summary Get Balance
+// @Summary Get balance
 // @Tags Balance
-// @Description get all bank accounts
-// @ID get-user-bank-accounts
+// @Description Get all bank accounts you have
+// @ID gets user bank accounts
 // @Produce json
 // @Success 200 {object} domain.Accounts
 // @Failure 400 {object} error
