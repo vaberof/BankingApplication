@@ -3,11 +3,11 @@ package domain
 type Accounts []*Account
 
 type Account struct {
-	Id      uint `gorm:"primary"`
-	UserId  uint
-	Owner   string
-	Type    string
-	Balance int
+	Id      uint   `json:"id" gorm:"primary"`
+	UserId  uint   `json:"-"`
+	Owner   string `json:"-"`
+	Type    string `json:"type"`
+	Balance int    `json:"balance"`
 }
 
 func NewAccount() *Account {

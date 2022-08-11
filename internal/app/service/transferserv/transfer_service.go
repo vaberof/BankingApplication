@@ -21,36 +21,46 @@ func NewTransferService(rTransfer repository.Transfer, rTransferAccount reposito
 	}
 }
 
-func (s *TransferService) MakeTransfer(userId uint, transfer *domain.Transfer) error {
+func (s *TransferService) TransformInputToTransfer(
+	senderId uint,
+	senderAccountId uint,
+	payeeAccountId uint,
+	amount int,
+	transferType string) (*domain.Transfer, error) {
+
+	transfer := domain.NewTransfer()
+
+	payeeAccount, err := s.rAccountFinder.GetAccountById(payeeAccountId)
+	if err != nil {
+		customError := errors.New(responses.PayeeAccountNotFound)
+		return nil, customError
+	}
+
+	transfer.SetSenderId(senderId)
+	transfer.SetSenderAccountId(senderAccountId)
+	transfer.SetPayeeUsername(payeeAccount.Owner)
+	transfer.SetPayeeAccountId(payeeAccountId)
+	transfer.SetAmount(amount)
+	transfer.SetType(transferType)
+
+	return transfer, nil
+}
+
+func (s *TransferService) MakeTransfer(transfer *domain.Transfer) error {
 	transferType := transfer.Type
 	switch transferType {
 	case "client":
-		return s.clientTransfer(userId, transfer)
+		return s.clientTransfer(transfer)
 	case "personal":
-		return s.personalTransfer(userId, transfer)
+		return s.personalTransfer(transfer)
 	default:
 		customError := errors.New(responses.UnsupportedTransferType)
 		return customError
 	}
 }
 
-func (s *TransferService) CreateTransfer(userId uint, transfer *domain.Transfer) error {
-	trans := domain.NewTransfer()
-
-	payeeAccount, err := s.rAccountFinder.GetAccountById(transfer.PayeeAccountId)
-	if err != nil {
-		customError := errors.New(responses.AccountNotFound)
-		return customError
-	}
-
-	trans.SetSenderId(userId)
-	trans.SetSenderAccountId(transfer.SenderAccountId)
-	trans.SetPayeeUsername(payeeAccount.Owner)
-	trans.SetPayeeAccountId(payeeAccount.Id)
-	trans.SetAmount(transfer.Amount)
-	trans.SetType(transfer.Type)
-
-	return s.rTransfer.CreateTransfer(trans)
+func (s *TransferService) CreateTransfer(transfer *domain.Transfer) error {
+	return s.rTransfer.CreateTransfer(transfer)
 }
 
 func (s *TransferService) GetTransfers(userId uint) (*domain.Transfers, error) {
@@ -61,12 +71,17 @@ func (s *TransferService) GetTransfers(userId uint) (*domain.Transfers, error) {
 	return transfers, nil
 }
 
-func (s *TransferService) clientTransfer(userId uint, transfer *domain.Transfer) error {
+func (s *TransferService) clientTransfer(transfer *domain.Transfer) error {
 	senderAccountId := transfer.SenderAccountId
 	payeeAccountId := transfer.PayeeAccountId
 	amount := transfer.Amount
 
-	senderAccount, err := s.rTransferAccount.GetSenderAccount(userId, senderAccountId)
+	if isZeroAmountTransfer(amount) {
+		customError := errors.New(responses.CannotTransferZeroAmount)
+		return customError
+	}
+
+	senderAccount, err := s.rTransferAccount.GetSenderAccount(transfer.SenderId, senderAccountId)
 	if err != nil {
 		return err
 	}
@@ -115,10 +130,17 @@ func (s *TransferService) clientTransfer(userId uint, transfer *domain.Transfer)
 	return nil
 }
 
-func (s *TransferService) personalTransfer(userId uint, transfer *domain.Transfer) error {
+func (s *TransferService) personalTransfer(transfer *domain.Transfer) error {
+	userId := transfer.SenderId
+
 	senderAccountId := transfer.SenderAccountId
 	payeeAccountId := transfer.PayeeAccountId
 	amount := transfer.Amount
+
+	if isZeroAmountTransfer(amount) {
+		customError := errors.New(responses.CannotTransferZeroAmount)
+		return customError
+	}
 
 	senderAccount, err := s.rTransferAccount.GetSenderAccount(userId, senderAccountId)
 	if err != nil {
@@ -175,6 +197,10 @@ func isSameAccountId(senderAccountId uint, payeeAccountId uint) bool {
 
 func isSameAccountOwner(senderUserId uint, payeeAccountId uint) bool {
 	return senderUserId == payeeAccountId
+}
+
+func isZeroAmountTransfer(amount int) bool {
+	return amount <= 0
 }
 
 func isEnoughFunds(balance int, amount int) bool {

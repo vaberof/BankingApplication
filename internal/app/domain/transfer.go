@@ -3,16 +3,13 @@ package domain
 type Transfers []*Transfer
 
 type Transfer struct {
-	Id uint `gorm:"primary"`
-
-	SenderId        uint `json:"sender_id"`
-	SenderAccountId uint `json:"sender_account_id"`
-
-	PayeeUsername  string `json:"payee_username"`
-	PayeeAccountId uint   `json:"payee_account_id"`
-
-	Amount int    `json:"amount"`
-	Type   string `json:"type"`
+	Id              uint   `json:"-" gorm:"primary"`
+	SenderId        uint   `json:"-"`
+	SenderAccountId uint   `json:"sender_account_id"`
+	PayeeUsername   string `json:"payee_username"`
+	PayeeAccountId  uint   `json:"payee_account_id"`
+	Amount          int    `json:"amount"`
+	Type            string `json:"transfer_type"`
 }
 
 func NewTransfer() *Transfer {

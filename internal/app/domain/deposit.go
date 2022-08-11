@@ -3,17 +3,14 @@ package domain
 type Deposits []*Deposit
 
 type Deposit struct {
-	Id uint `gorm:"primary"`
-
-	SenderId        uint
-	SenderUsername  string
-	SenderAccountId uint
-
-	PayeeId        uint
-	PayeeAccountId uint
-
-	Amount int
-	Type   string
+	Id              uint   `json:"-" gorm:"primary"`
+	SenderId        uint   `json:"-"`
+	SenderUsername  string `json:"sender_username"`
+	SenderAccountId uint   `json:"sender_account_id"`
+	PayeeId         uint   `json:"-"`
+	PayeeAccountId  uint   `json:"payee_account_id"`
+	Amount          int    `json:"amount"`
+	Type            string `json:"transfer_type"`
 }
 
 func NewDeposit() *Deposit {

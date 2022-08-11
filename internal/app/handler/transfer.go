@@ -3,10 +3,16 @@ package handler
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/vaberof/banking_app/internal/app/domain"
 	"github.com/vaberof/banking_app/internal/pkg/responses"
 	"github.com/vaberof/banking_app/internal/pkg/typeconv"
 )
+
+type inputTransfer struct {
+	SenderAccountId uint   `json:"sender_account_id"`
+	PayeeAccountId  uint   `json:"payee_account_id"`
+	Amount          int    `json:"amount"`
+	Type            string `json:"transfer_type"`
+}
 
 func (h *Handler) transfer(c *fiber.Ctx) error {
 	jwtToken := c.Cookies("jwt")
@@ -21,7 +27,7 @@ func (h *Handler) transfer(c *fiber.Ctx) error {
 
 	claims := token.Claims.(*jwt.RegisteredClaims)
 
-	var input domain.Transfer
+	var input inputTransfer
 
 	err = c.BodyParser(&input)
 	if err != nil {
@@ -31,7 +37,7 @@ func (h *Handler) transfer(c *fiber.Ctx) error {
 		})
 	}
 
-	userId, err := typeconv.ConvertStringIdToUintId(claims.Issuer)
+	senderId, err := typeconv.ConvertStringIdToUintId(claims.Issuer)
 	if err != nil {
 		c.Status(fiber.StatusInternalServerError)
 		return c.JSON(fiber.Map{
@@ -39,16 +45,30 @@ func (h *Handler) transfer(c *fiber.Ctx) error {
 		})
 	}
 
-	err = h.services.Transfer.MakeTransfer(userId, &input)
+	transfer, err := h.services.Transfer.TransformInputToTransfer(
+		senderId,
+		input.SenderAccountId,
+		input.PayeeAccountId,
+		input.Amount,
+		input.Type)
+
 	if err != nil {
-		c.Status(fiber.StatusConflict)
+		c.Status(fiber.StatusInternalServerError)
+		return c.JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	err = h.services.Transfer.MakeTransfer(transfer)
+	if err != nil {
+		c.Status(fiber.StatusInternalServerError)
 		return c.JSON(fiber.Map{
 			"message": responses.FailedTransfer,
 			"error":   err.Error(),
 		})
 	}
 
-	err = h.services.Transfer.CreateTransfer(userId, &input)
+	err = h.services.Transfer.CreateTransfer(transfer)
 	if err != nil {
 		c.Status(fiber.StatusInternalServerError)
 		return c.JSON(fiber.Map{
@@ -56,7 +76,7 @@ func (h *Handler) transfer(c *fiber.Ctx) error {
 		})
 	}
 
-	deposit, err := h.services.Deposit.TransformTransferToDeposit(userId, &input)
+	deposit, err := h.services.Deposit.ConvertTransferToDeposit(transfer)
 	if err != nil {
 		c.Status(fiber.StatusInternalServerError)
 		return c.JSON(fiber.Map{

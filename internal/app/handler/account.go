@@ -8,6 +8,10 @@ import (
 	"github.com/vaberof/banking_app/internal/pkg/typeconv"
 )
 
+type inputAccount struct {
+	Type string `json:"type"`
+}
+
 func (h *Handler) createAccount(c *fiber.Ctx) error {
 	jwtToken := c.Cookies("jwt")
 
@@ -21,7 +25,7 @@ func (h *Handler) createAccount(c *fiber.Ctx) error {
 
 	claims := token.Claims.(*jwt.RegisteredClaims)
 
-	var input domain.Account
+	var input inputAccount
 
 	err = c.BodyParser(&input)
 	if err != nil {

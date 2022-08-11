@@ -29,7 +29,8 @@ const (
 
 	SenderIsPayee            = "you are trying to make a transfer to your own account"
 	InsufficientFunds        = "insufficient funds"
-	CannotMakeDatabaseUpdate = "cannot update database value"
+	CannotTransferZeroAmount = "amount of transfer should be more than 0"
+	UnsupportedTransferType  = "unsupported transfer type"
 
-	UnsupportedTransferType = "unsupported transfer type"
+	CannotMakeDatabaseUpdate = "cannot update database value"
 )

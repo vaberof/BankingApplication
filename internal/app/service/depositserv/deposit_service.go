@@ -19,10 +19,10 @@ func NewDepositService(rDeposit repository.Deposit, rUserFinder repository.UserF
 	}
 }
 
-func (s *DepositService) TransformTransferToDeposit(userId uint, transfer *domain.Transfer) (*domain.Deposit, error) {
+func (s *DepositService) ConvertTransferToDeposit(transfer *domain.Transfer) (*domain.Deposit, error) {
 	deposit := domain.NewDeposit()
 
-	senderUser, err := s.rUserFinder.GetUserById(userId)
+	senderUser, err := s.rUserFinder.GetUserById(transfer.SenderId)
 	if err != nil {
 		return nil, err
 	}

@@ -67,14 +67,15 @@ type Balance interface {
 }
 
 type Transfer interface {
-	MakeTransfer(userId uint, transfer *domain.Transfer) error
-	CreateTransfer(userId uint, transfer *domain.Transfer) error
+	CreateTransfer(transfer *domain.Transfer) error
+	MakeTransfer(transfer *domain.Transfer) error
+	TransformInputToTransfer(senderId uint, senderAccountId uint, payeeAccountId uint, amount int, transferType string) (*domain.Transfer, error)
 	GetTransfers(userId uint) (*domain.Transfers, error)
 }
 
 type Deposit interface {
 	CreateDeposit(deposit *domain.Deposit) error
-	TransformTransferToDeposit(userId uint, transfer *domain.Transfer) (*domain.Deposit, error)
+	ConvertTransferToDeposit(transfer *domain.Transfer) (*domain.Deposit, error)
 	GetDeposits(userId uint) (*domain.Deposits, error)
 }
 
