@@ -2,3 +2,4 @@
     root-package = "banking_app"
     go-version = "go1.18.3"
     install = [ "./..."]
+    ensure = "true"
