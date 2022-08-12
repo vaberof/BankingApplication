@@ -5,5 +5,5 @@ import (
 )
 
 func Run(host string, port string, app *fiber.App) error {
-	return app.Listen(host + ":" + port)
+	return app.Listen(host + port)
 }

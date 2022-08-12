@@ -18,7 +18,7 @@ func NewPostgresDb(cfg *Config) (*gorm.DB, error) {
 	dsn := fmt.Sprint("postgres://" + cfg.User +
 		":" + cfg.Password +
 		"@" + cfg.Host +
-		cfg.Port +
+		":" + cfg.Port +
 		"/" + cfg.Name)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
