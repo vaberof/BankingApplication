@@ -37,7 +37,10 @@ func (h *Handler) InitRoutes(config fiber.Config) *fiber.App {
 }
 
 func configureCors(app *fiber.App) {
-	app.Use(cors.New(cors.Config{
+	corsConfig := cors.Config{
+		AllowOrigins:     "*",
 		AllowCredentials: true,
-	}))
+	}
+
+	app.Use(cors.New(corsConfig))
 }
