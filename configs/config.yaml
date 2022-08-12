@@ -1,5 +1,5 @@
 server:
-  host: "https://mock-banking-application.herokuapp.com/"
+  host: "https://mock-banking-application.herokuapp.com"
   port: "80"
 
 db:
