@@ -1,5 +1,0 @@
-[metadata.heroku]
-  root-package = "github.com/vaberof/banking_app"
-  go-version = "go1.18"
-  install = [" ./configs/"]
-  ensure = "true"
