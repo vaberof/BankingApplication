@@ -53,7 +53,7 @@ func main() {
 		log.Fatalf("cannot make migrations %s", err.Error())
 	}
 
-	if err = server.Run(viper.GetString("server.host"), viper.GetString("server.port"), app); err != nil {
+	if err = server.Run(":"+os.Getenv("PORT"), app); err != nil {
 		log.Fatalf("cannot run server: %s", err.Error())
 	}
 }
