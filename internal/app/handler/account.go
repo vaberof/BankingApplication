@@ -20,6 +20,7 @@ type inputAccount struct {
 // @Param input body inputAccount true "account type"
 // @Success 200 {string} string responses.Success
 // @Failure 400 {object} error
+// @Failure 401 {object} error
 // @Failure 404 {object} error
 // @Failure 500 {object} error
 // @Router /account [post]
@@ -99,6 +100,7 @@ func (h *Handler) createAccount(c *fiber.Ctx) error {
 // @Param input body inputAccount true "account type"
 // @Success 200 {string} string responses.Success
 // @Failure 400 {object} error
+// @Failure 401 {object} error
 // @Failure 404 {object} error
 // @Failure 500 {object} error
 // @Router /account [delete]
