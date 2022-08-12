@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/swagger"
 	_ "github.com/vaberof/banking_app/docs"
 	"github.com/vaberof/banking_app/internal/app/service"
@@ -18,6 +19,8 @@ func NewHandler(services *service.Service) *Handler {
 func (h *Handler) InitRoutes(config fiber.Config) *fiber.App {
 	app := fiber.New(config)
 
+	configureCors(app)
+
 	app.Get("/swagger/*", swagger.HandlerDefault)
 
 	app.Post("/signup", h.signUp)
@@ -31,4 +34,10 @@ func (h *Handler) InitRoutes(config fiber.Config) *fiber.App {
 	app.Get("/deposits", h.getDeposits)
 
 	return app
+}
+
+func configureCors(app *fiber.App) {
+	app.Use(cors.New(cors.Config{
+		AllowCredentials: true,
+	}))
 }
