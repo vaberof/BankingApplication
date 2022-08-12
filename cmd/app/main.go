@@ -17,7 +17,7 @@ import (
 // @version 1.0
 // @description API Server for Mock Banking Application
 
-// @host localhost:8080
+// @host mock-banking-application.herokuapp.com:80
 // @BasePath /
 
 // @securityDefinition.apikey ApiKeyAuth
