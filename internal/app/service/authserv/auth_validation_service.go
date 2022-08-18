@@ -1,7 +1,7 @@
 package authserv
 
 import (
-	"github.com/vaberof/banking_app/internal/app/repository"
+	"github.com/vaberof/MockBankingApplication/internal/app/repository"
 	"golang.org/x/crypto/bcrypt"
 )
 

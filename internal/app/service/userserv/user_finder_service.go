@@ -1,8 +1,8 @@
 package userserv
 
 import (
-	"github.com/vaberof/banking_app/internal/app/domain"
-	"github.com/vaberof/banking_app/internal/app/repository"
+	"github.com/vaberof/MockBankingApplication/internal/app/domain"
+	"github.com/vaberof/MockBankingApplication/internal/app/repository"
 )
 
 type UserFinderService struct {

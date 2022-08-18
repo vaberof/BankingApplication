@@ -3,8 +3,8 @@ package authserv
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/vaberof/banking_app/internal/app/domain"
-	"github.com/vaberof/banking_app/internal/app/repository"
+	"github.com/vaberof/MockBankingApplication/internal/app/domain"
+	"github.com/vaberof/MockBankingApplication/internal/app/repository"
 	"golang.org/x/crypto/bcrypt"
 	"os"
 	"strconv"

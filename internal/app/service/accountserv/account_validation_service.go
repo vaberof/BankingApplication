@@ -1,7 +1,7 @@
 package accountserv
 
 import (
-	"github.com/vaberof/banking_app/internal/app/repository"
+	"github.com/vaberof/MockBankingApplication/internal/app/repository"
 )
 
 type AccountValidationService struct {

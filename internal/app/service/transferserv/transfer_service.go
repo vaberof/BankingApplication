@@ -2,9 +2,9 @@ package transferserv
 
 import (
 	"errors"
-	"github.com/vaberof/banking_app/internal/app/domain"
-	"github.com/vaberof/banking_app/internal/app/repository"
-	"github.com/vaberof/banking_app/internal/pkg/responses"
+	"github.com/vaberof/MockBankingApplication/internal/app/domain"
+	"github.com/vaberof/MockBankingApplication/internal/app/repository"
+	"github.com/vaberof/MockBankingApplication/internal/pkg/responses"
 )
 
 type TransferService struct {

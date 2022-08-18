@@ -1,13 +1,13 @@
 package repository
 
 import (
-	"github.com/vaberof/banking_app/internal/app/domain"
-	"github.com/vaberof/banking_app/internal/app/repository/postgres/accountpg"
-	"github.com/vaberof/banking_app/internal/app/repository/postgres/authpg"
-	"github.com/vaberof/banking_app/internal/app/repository/postgres/balancepg"
-	"github.com/vaberof/banking_app/internal/app/repository/postgres/depositpg"
-	"github.com/vaberof/banking_app/internal/app/repository/postgres/transferpg"
-	"github.com/vaberof/banking_app/internal/app/repository/postgres/userpg"
+	"github.com/vaberof/MockBankingApplication/internal/app/domain"
+	"github.com/vaberof/MockBankingApplication/internal/app/repository/postgres/accountpg"
+	"github.com/vaberof/MockBankingApplication/internal/app/repository/postgres/authpg"
+	"github.com/vaberof/MockBankingApplication/internal/app/repository/postgres/balancepg"
+	"github.com/vaberof/MockBankingApplication/internal/app/repository/postgres/depositpg"
+	"github.com/vaberof/MockBankingApplication/internal/app/repository/postgres/transferpg"
+	"github.com/vaberof/MockBankingApplication/internal/app/repository/postgres/userpg"
 	"gorm.io/gorm"
 )
 

@@ -3,14 +3,14 @@ package service
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/vaberof/banking_app/internal/app/domain"
-	"github.com/vaberof/banking_app/internal/app/repository"
-	"github.com/vaberof/banking_app/internal/app/service/accountserv"
-	"github.com/vaberof/banking_app/internal/app/service/authserv"
-	"github.com/vaberof/banking_app/internal/app/service/balanceserv"
-	"github.com/vaberof/banking_app/internal/app/service/depositserv"
-	"github.com/vaberof/banking_app/internal/app/service/transferserv"
-	"github.com/vaberof/banking_app/internal/app/service/userserv"
+	"github.com/vaberof/MockBankingApplication/internal/app/domain"
+	"github.com/vaberof/MockBankingApplication/internal/app/repository"
+	"github.com/vaberof/MockBankingApplication/internal/app/service/accountserv"
+	"github.com/vaberof/MockBankingApplication/internal/app/service/authserv"
+	"github.com/vaberof/MockBankingApplication/internal/app/service/balanceserv"
+	"github.com/vaberof/MockBankingApplication/internal/app/service/depositserv"
+	"github.com/vaberof/MockBankingApplication/internal/app/service/transferserv"
+	"github.com/vaberof/MockBankingApplication/internal/app/service/userserv"
 )
 
 type Authorization interface {

@@ -4,8 +4,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/swagger"
-	_ "github.com/vaberof/banking_app/docs"
-	"github.com/vaberof/banking_app/internal/app/service"
+	_ "github.com/vaberof/MockBankingApplication/docs"
+	"github.com/vaberof/MockBankingApplication/internal/app/service"
 )
 
 type Handler struct {

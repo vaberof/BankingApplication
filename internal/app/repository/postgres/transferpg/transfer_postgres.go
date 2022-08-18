@@ -2,8 +2,8 @@ package transferpg
 
 import (
 	"errors"
-	"github.com/vaberof/banking_app/internal/app/domain"
-	"github.com/vaberof/banking_app/internal/pkg/responses"
+	"github.com/vaberof/MockBankingApplication/internal/app/domain"
+	"github.com/vaberof/MockBankingApplication/internal/pkg/responses"
 	"gorm.io/gorm"
 )
 
