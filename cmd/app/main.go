@@ -5,10 +5,10 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 	"github.com/vaberof/banking_app/internal/app/handler"
-	"github.com/vaberof/banking_app/internal/app/repository"
-	"github.com/vaberof/banking_app/internal/app/repository/postgres"
 	"github.com/vaberof/banking_app/internal/app/service"
 	"github.com/vaberof/banking_app/internal/pkg/http/server"
+	"github.com/vaberof/banking_app/internal/storage"
+	"github.com/vaberof/banking_app/internal/storage/postgres"
 	"log"
 	"os"
 	"time"
@@ -45,7 +45,7 @@ func main() {
 		log.Fatalf("cannot connect to database %s", err.Error())
 	}
 
-	repos := repository.NewRepository(db)
+	repos := storage.NewRepository(db)
 	services := service.NewService(repos)
 	handlers := handler.NewHandler(services)
 

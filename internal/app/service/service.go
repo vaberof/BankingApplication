@@ -4,13 +4,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/vaberof/banking_app/internal/app/domain"
-	"github.com/vaberof/banking_app/internal/app/repository"
 	"github.com/vaberof/banking_app/internal/app/service/accountserv"
 	"github.com/vaberof/banking_app/internal/app/service/authserv"
 	"github.com/vaberof/banking_app/internal/app/service/balanceserv"
 	"github.com/vaberof/banking_app/internal/app/service/depositserv"
 	"github.com/vaberof/banking_app/internal/app/service/transferserv"
 	"github.com/vaberof/banking_app/internal/app/service/userserv"
+	"github.com/vaberof/banking_app/internal/storage"
 )
 
 type Authorization interface {
@@ -91,7 +91,7 @@ type Service struct {
 	Deposit
 }
 
-func NewService(repos *repository.Repository) *Service {
+func NewService(repos *storage.Repository) *Service {
 	return &Service{
 		Authorization:          authserv.NewAuthService(repos.Authorization),
 		AuthorizationValidator: authserv.NewAuthValidationService(repos.AuthorizationValidator),

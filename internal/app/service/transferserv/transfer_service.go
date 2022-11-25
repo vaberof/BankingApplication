@@ -3,17 +3,17 @@ package transferserv
 import (
 	"errors"
 	"github.com/vaberof/banking_app/internal/app/domain"
-	"github.com/vaberof/banking_app/internal/app/repository"
 	"github.com/vaberof/banking_app/internal/pkg/responses"
+	"github.com/vaberof/banking_app/internal/storage"
 )
 
 type TransferService struct {
-	rTransfer        repository.Transfer
-	rTransferAccount repository.TransferAccount
-	rAccountFinder   repository.AccountFinder
+	rTransfer        storage.Transfer
+	rTransferAccount storage.TransferAccount
+	rAccountFinder   storage.AccountFinder
 }
 
-func NewTransferService(rTransfer repository.Transfer, rTransferAccount repository.TransferAccount, rAccountFinder repository.AccountFinder) *TransferService {
+func NewTransferService(rTransfer storage.Transfer, rTransferAccount storage.TransferAccount, rAccountFinder storage.AccountFinder) *TransferService {
 	return &TransferService{
 		rTransfer:        rTransfer,
 		rTransferAccount: rTransferAccount,

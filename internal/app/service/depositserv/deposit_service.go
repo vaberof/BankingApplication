@@ -2,16 +2,16 @@ package depositserv
 
 import (
 	"github.com/vaberof/banking_app/internal/app/domain"
-	"github.com/vaberof/banking_app/internal/app/repository"
+	"github.com/vaberof/banking_app/internal/storage"
 )
 
 type DepositService struct {
-	rDeposit       repository.Deposit
-	rUserFinder    repository.UserFinder
-	rAccountFinder repository.AccountFinder
+	rDeposit       storage.Deposit
+	rUserFinder    storage.UserFinder
+	rAccountFinder storage.AccountFinder
 }
 
-func NewDepositService(rDeposit repository.Deposit, rUserFinder repository.UserFinder, rAccountFinder repository.AccountFinder) *DepositService {
+func NewDepositService(rDeposit storage.Deposit, rUserFinder storage.UserFinder, rAccountFinder storage.AccountFinder) *DepositService {
 	return &DepositService{
 		rDeposit:       rDeposit,
 		rUserFinder:    rUserFinder,

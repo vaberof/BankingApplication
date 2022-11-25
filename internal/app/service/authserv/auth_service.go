@@ -4,7 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/vaberof/banking_app/internal/app/domain"
-	"github.com/vaberof/banking_app/internal/app/repository"
+	"github.com/vaberof/banking_app/internal/storage"
 	"golang.org/x/crypto/bcrypt"
 	"os"
 	"strconv"
@@ -12,10 +12,10 @@ import (
 )
 
 type AuthService struct {
-	repos repository.Authorization
+	repos storage.Authorization
 }
 
-func NewAuthService(repos repository.Authorization) *AuthService {
+func NewAuthService(repos storage.Authorization) *AuthService {
 	return &AuthService{repos: repos}
 }
 

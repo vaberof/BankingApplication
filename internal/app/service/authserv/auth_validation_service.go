@@ -1,15 +1,15 @@
 package authserv
 
 import (
-	"github.com/vaberof/banking_app/internal/app/repository"
+	"github.com/vaberof/banking_app/internal/storage"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthValidationService struct {
-	repos repository.AuthorizationValidator
+	repos storage.AuthorizationValidator
 }
 
-func NewAuthValidationService(repos repository.AuthorizationValidator) *AuthValidationService {
+func NewAuthValidationService(repos storage.AuthorizationValidator) *AuthValidationService {
 	return &AuthValidationService{repos: repos}
 }
 

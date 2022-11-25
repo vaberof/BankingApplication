@@ -2,14 +2,14 @@ package balanceserv
 
 import (
 	"github.com/vaberof/banking_app/internal/app/domain"
-	"github.com/vaberof/banking_app/internal/app/repository"
+	"github.com/vaberof/banking_app/internal/storage"
 )
 
 type BalanceService struct {
-	repos repository.Balance
+	repos storage.Balance
 }
 
-func NewBalanceService(repos repository.Balance) *BalanceService {
+func NewBalanceService(repos storage.Balance) *BalanceService {
 	return &BalanceService{repos: repos}
 }
 

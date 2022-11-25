@@ -1,14 +1,14 @@
 package accountserv
 
 import (
-	"github.com/vaberof/banking_app/internal/app/repository"
+	"github.com/vaberof/banking_app/internal/storage"
 )
 
 type AccountValidationService struct {
-	repos repository.AccountValidator
+	repos storage.AccountValidator
 }
 
-func NewAccountValidationService(repos repository.AccountValidator) *AccountValidationService {
+func NewAccountValidationService(repos storage.AccountValidator) *AccountValidationService {
 	return &AccountValidationService{repos: repos}
 }
 

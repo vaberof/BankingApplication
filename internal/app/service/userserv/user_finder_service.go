@@ -2,14 +2,14 @@ package userserv
 
 import (
 	"github.com/vaberof/banking_app/internal/app/domain"
-	"github.com/vaberof/banking_app/internal/app/repository"
+	"github.com/vaberof/banking_app/internal/storage"
 )
 
 type UserFinderService struct {
-	repos repository.UserFinder
+	repos storage.UserFinder
 }
 
-func NewUserFinderService(repos repository.UserFinder) *UserFinderService {
+func NewUserFinderService(repos storage.UserFinder) *UserFinderService {
 	return &UserFinderService{repos: repos}
 }
 

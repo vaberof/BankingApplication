@@ -2,14 +2,14 @@ package accountserv
 
 import (
 	"github.com/vaberof/banking_app/internal/app/domain"
-	"github.com/vaberof/banking_app/internal/app/repository"
+	"github.com/vaberof/banking_app/internal/storage"
 )
 
 type AccountService struct {
-	repos repository.Account
+	repos storage.Account
 }
 
-func NewAccountService(repos repository.Account) *AccountService {
+func NewAccountService(repos storage.Account) *AccountService {
 	return &AccountService{repos: repos}
 }
 

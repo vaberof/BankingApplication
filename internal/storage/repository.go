@@ -1,13 +1,13 @@
-package repository
+package storage
 
 import (
 	"github.com/vaberof/banking_app/internal/app/domain"
-	"github.com/vaberof/banking_app/internal/app/repository/postgres/accountpg"
-	"github.com/vaberof/banking_app/internal/app/repository/postgres/authpg"
-	"github.com/vaberof/banking_app/internal/app/repository/postgres/balancepg"
-	"github.com/vaberof/banking_app/internal/app/repository/postgres/depositpg"
-	"github.com/vaberof/banking_app/internal/app/repository/postgres/transferpg"
-	"github.com/vaberof/banking_app/internal/app/repository/postgres/userpg"
+	accountpg2 "github.com/vaberof/banking_app/internal/storage/postgres/accountpg"
+	authpg2 "github.com/vaberof/banking_app/internal/storage/postgres/authpg"
+	"github.com/vaberof/banking_app/internal/storage/postgres/balancepg"
+	"github.com/vaberof/banking_app/internal/storage/postgres/depositpg"
+	transferpg2 "github.com/vaberof/banking_app/internal/storage/postgres/transferpg"
+	"github.com/vaberof/banking_app/internal/storage/postgres/userpg"
 	"gorm.io/gorm"
 )
 
@@ -91,15 +91,15 @@ type Repository struct {
 
 func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{
-		Authorization:          authpg.NewAuthPostgres(db),
-		AuthorizationValidator: authpg.NewAuthValidationPostgres(db),
+		Authorization:          authpg2.NewAuthPostgres(db),
+		AuthorizationValidator: authpg2.NewAuthValidationPostgres(db),
 		UserFinder:             userpg.NewUserFinderPostgres(db),
-		Account:                accountpg.NewAccountPostgres(db),
-		AccountValidator:       accountpg.NewAccountValidationPostgres(db),
-		AccountFinder:          accountpg.NewAccountFinderPostgres(db),
+		Account:                accountpg2.NewAccountPostgres(db),
+		AccountValidator:       accountpg2.NewAccountValidationPostgres(db),
+		AccountFinder:          accountpg2.NewAccountFinderPostgres(db),
 		Balance:                balancepg.NewBalancePostgres(db),
-		Transfer:               transferpg.NewTransferPostgres(db),
-		TransferAccount:        transferpg.NewTransferAccountPostgres(db),
+		Transfer:               transferpg2.NewTransferPostgres(db),
+		TransferAccount:        transferpg2.NewTransferAccountPostgres(db),
 		Deposit:                depositpg.NewDepositPostgres(db),
 	}
 }
