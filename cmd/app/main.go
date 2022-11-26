@@ -4,11 +4,15 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
-	"github.com/vaberof/banking_app/internal/app/handler"
-	"github.com/vaberof/banking_app/internal/app/service"
-	"github.com/vaberof/banking_app/internal/pkg/http/server"
-	"github.com/vaberof/banking_app/internal/storage"
-	"github.com/vaberof/banking_app/internal/storage/postgres"
+	"github.com/vaberof/banking_app/internal/app/http/handler"
+	"github.com/vaberof/banking_app/internal/domain/account"
+	"github.com/vaberof/banking_app/internal/domain/user"
+	"github.com/vaberof/banking_app/internal/infra/storage/postgres"
+	"github.com/vaberof/banking_app/internal/infra/storage/postgres/accountpg"
+	"github.com/vaberof/banking_app/internal/infra/storage/postgres/userpg"
+	getaccount "github.com/vaberof/banking_app/internal/service/account"
+	"github.com/vaberof/banking_app/internal/service/auth"
+	getuser "github.com/vaberof/banking_app/internal/service/user"
 	"log"
 	"os"
 	"time"
@@ -38,28 +42,38 @@ func main() {
 		Host:     viper.GetString("db.host"),
 		Port:     viper.GetString("db.port"),
 		Name:     viper.GetString("db.name"),
-		User:     viper.GetString("db.user"),
+		User:     os.Getenv("db_username"),
 		Password: os.Getenv("db_password"),
 	})
 	if err != nil {
 		log.Fatalf("cannot connect to database %s", err.Error())
 	}
 
-	repos := storage.NewRepository(db)
-	services := service.NewService(repos)
-	handlers := handler.NewHandler(services)
-
-	app := handlers.InitRoutes(fiber.Config{
-		WriteTimeout: 10 * time.Second,
-		ReadTimeout:  10 * time.Second,
-	})
-
-	if err = repos.MakeMigrations(db); err != nil {
-		log.Fatalf("cannot make migrations %s", err.Error())
+	err = db.AutoMigrate(&accountpg.Account{}, &userpg.User{})
+	if err != nil {
+		log.Fatalf("cannot auto migrate models %s", err.Error())
 	}
 
-	if err = server.Run(viper.GetString("server.host"), viper.GetString("server.port"), app); err != nil {
-		log.Fatalf("cannot run server: %s", err.Error())
+	userStoragePostgres := userpg.NewPostgresUserStorage(db)
+	accountStoragePostgres := accountpg.NewPostgresAccountStorage(db)
+
+	userService := user.NewUserService(userStoragePostgres)
+	accountService := account.NewAccountService(accountStoragePostgres)
+
+	getUserService := getuser.NewGetUserService(userService)
+	getAccountService := getaccount.NewGetAccountService(accountService)
+
+	authService := auth.NewAuthService(getUserService)
+
+	httpHandler := handler.NewHandler(getUserService, getAccountService, authService)
+
+	app := httpHandler.InitRoutes(&fiber.Config{
+		WriteTimeout: time.Duration(viper.GetInt("server.write_timeout")) * time.Second,
+		ReadTimeout:  time.Duration(viper.GetInt("server.read_timeout")) * time.Second,
+	})
+
+	if err = app.Listen(viper.GetString("server.host") + ":" + viper.GetString("server.port")); err != nil {
+		log.Fatalf("cannot run a server: %v", err)
 	}
 }
 

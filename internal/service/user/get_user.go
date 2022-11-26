@@ -1,6 +1,6 @@
 package user
 
-type User struct {
+type GetUser struct {
 	Id       uint
 	Username string
 	Password string
