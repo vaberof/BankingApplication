@@ -1,7 +1,7 @@
 package user
 
 import (
-	infra "github.com/vaberof/banking_app/internal/infra/storage/postgres/userpg"
+	infra "github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres/userpg"
 )
 
 type UserStorage interface {

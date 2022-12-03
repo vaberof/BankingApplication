@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/vaberof/banking_app/internal/service/account"
+	"github.com/vaberof/MockBankingApplication/internal/service/account"
 )
 
 type AccountService interface {

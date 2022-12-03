@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/gofiber/fiber/v2"
-	getuser "github.com/vaberof/banking_app/internal/service/user"
+	getuser "github.com/vaberof/MockBankingApplication/internal/service/user"
 )
 
 type AuthorizationService interface {

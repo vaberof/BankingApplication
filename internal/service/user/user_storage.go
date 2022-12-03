@@ -1,7 +1,7 @@
 package user
 
 import (
-	domain "github.com/vaberof/banking_app/internal/domain/user"
+	domain "github.com/vaberof/MockBankingApplication/internal/domain/user"
 )
 
 type UserStorage interface {

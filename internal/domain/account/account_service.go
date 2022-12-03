@@ -1,7 +1,7 @@
 package account
 
 import (
-	infra "github.com/vaberof/banking_app/internal/infra/storage/postgres/accountpg"
+	infra "github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres/accountpg"
 )
 
 type AccountService struct {

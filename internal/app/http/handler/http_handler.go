@@ -3,7 +3,7 @@ package handler
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/swagger"
-	_ "github.com/vaberof/banking_app/docs"
+	_ "github.com/vaberof/MockBankingApplication/docs"
 )
 
 type HttpHandler struct {

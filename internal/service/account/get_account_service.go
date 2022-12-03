@@ -1,7 +1,7 @@
 package account
 
 import (
-	domain "github.com/vaberof/banking_app/internal/domain/account"
+	domain "github.com/vaberof/MockBankingApplication/internal/domain/account"
 )
 
 type GetAccountService struct {

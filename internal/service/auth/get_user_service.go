@@ -1,7 +1,7 @@
 package auth
 
 import (
-	getuser "github.com/vaberof/banking_app/internal/service/user"
+	getuser "github.com/vaberof/MockBankingApplication/internal/service/user"
 )
 
 type GetUserService interface {

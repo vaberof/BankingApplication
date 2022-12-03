@@ -1,7 +1,7 @@
 package account
 
 import (
-	"github.com/vaberof/banking_app/internal/infra/storage/postgres/accountpg"
+	"github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres/accountpg"
 )
 
 type AccountStorage interface {
