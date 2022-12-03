@@ -18,7 +18,7 @@ import (
 // @Failure 404 {object} error
 // @Failure 500 {object} error
 // @Router /deposits [get]
-func (h *Handler) getDeposits(c *fiber.Ctx) error {
+func (h *HttpHandler) getDeposits(c *fiber.Ctx) error {
 	jwtToken := c.Cookies("jwt")
 
 	token, err := h.services.Authorization.ParseJwtToken(jwtToken)

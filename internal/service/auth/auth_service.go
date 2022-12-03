@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
 	domain "github.com/vaberof/banking_app/internal/domain/user"
@@ -91,7 +92,7 @@ func (s *AuthService) parseJwtToken(cookie string) (*jwt.Token, error) {
 func (s *AuthService) generateJwtClaims(username string, password string) (*jwt.Token, error) {
 	user, err := s.getUserService.GetUser(username, password)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("incorrect username or/and password")
 	}
 
 	tokenWithClaims := jwt.NewWithClaims(

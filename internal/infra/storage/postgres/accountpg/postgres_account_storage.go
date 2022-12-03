@@ -1,6 +1,9 @@
 package accountpg
 
-import "gorm.io/gorm"
+import (
+	"errors"
+	"gorm.io/gorm"
+)
 
 const (
 	initialAccountType    = "Main"
@@ -96,6 +99,14 @@ func (s *PostgresAccountStorage) deleteAccountImpl(userId uint, accountName stri
 		return err
 	}
 
+	if s.isMainAccountType(account.Type) {
+		return errors.New("cannot delete account with main type")
+	}
+
+	if !s.isZeroAccountBalance(account.Balance) {
+		return errors.New("cannot delete account with non-zero balance")
+	}
+
 	err = s.db.Delete(&account).Error
 	if err != nil {
 		return err
@@ -107,9 +118,10 @@ func (s *PostgresAccountStorage) deleteAccountImpl(userId uint, accountName stri
 func (s *PostgresAccountStorage) getAccountImpl(userId uint, accountName string) (*Account, error) {
 	var account Account
 
-	err := s.db.Table("accounts").Where("user_id = ? AND account_name = ?", userId, accountName).First(&account).Error
+	err := s.db.Table("accounts").Where("user_id = ? AND name = ?", userId, accountName).First(&account).Error
 	if err != nil {
-		return nil, err
+		// log.Error(err.Error())
+		return nil, errors.New("cannot find account")
 	}
 
 	return &account, nil
@@ -124,4 +136,12 @@ func (s *PostgresAccountStorage) getAccountsImpl(userId uint) ([]*Account, error
 	}
 
 	return accounts, nil
+}
+
+func (s *PostgresAccountStorage) isZeroAccountBalance(balance int) bool {
+	return balance <= 0
+}
+
+func (s *PostgresAccountStorage) isMainAccountType(accountType string) bool {
+	return accountType == "Main"
 }

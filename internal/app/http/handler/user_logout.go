@@ -1,9 +1,7 @@
 package handler
 
-/*
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/vaberof/banking_app/internal/pkg/responses"
 )
 
 // @Summary Logout
@@ -14,23 +12,20 @@ import (
 // @Success 200 {string} string responses.Success
 // @Failure 401 {string} string responses.Unauthorized
 // @Router /logout [post]
-func (h *Handler) logout(c *fiber.Ctx) error {
-	jwtToken := c.Cookies("jwt")
-
-	_, err := h.services.Authorization.ParseJwtToken(jwtToken)
+func (h *HttpHandler) logout(c *fiber.Ctx) error {
+	_, err := h.authService.AuthenticateUser(c.Cookies("jwt"))
 	if err != nil {
 		c.Status(fiber.StatusUnauthorized)
 		return c.JSON(fiber.Map{
-			"message": responses.Unauthorized,
+			"error": "unauthorized",
 		})
 	}
 
-	cookie := h.services.Authorization.RemoveCookie()
+	cookie := h.authService.RemoveCookie()
 	c.Cookie(cookie)
 
 	c.Status(fiber.StatusOK)
 	return c.JSON(fiber.Map{
-		"message": responses.Success,
+		"message": "successfully logout",
 	})
 }
-*/

@@ -9,6 +9,6 @@ type AccountService interface {
 	CreateCustomAccount(userId uint, accountName string) error
 	GetAccount(userId uint, accountName string) (*account.GetAccount, error)
 	GetAccounts(userId uint) ([]*account.GetAccount, error)
-	UpdateBalance(userId uint, accountName string, balance int) error
 	DeleteAccount(userId uint, accountName string) error
+	UpdateBalance(userId uint, accountName string, balance int) error
 }

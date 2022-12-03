@@ -25,8 +25,12 @@ func (s *GetUserService) GetUserById(userId uint) (*GetUser, error) {
 	return s.getUserByIdImpl(userId)
 }
 
+func (s *GetUserService) GetUserByUsername(username string) (*GetUser, error) {
+	return s.getUserByUsernameImpl(username)
+}
+
 func (s *GetUserService) getUserImpl(username string, password string) (*GetUser, error) {
-	domainUser, err := s.userStorage.GetUser(username)
+	domainUser, err := s.userStorage.GetUserByUsername(username)
 	if err != nil {
 		return nil, err
 	}
@@ -42,6 +46,16 @@ func (s *GetUserService) getUserImpl(username string, password string) (*GetUser
 
 func (s *GetUserService) getUserByIdImpl(userId uint) (*GetUser, error) {
 	domainUser, err := s.userStorage.GetUserById(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	getUser := s.domainUserToGetUser(domainUser)
+	return getUser, nil
+}
+
+func (s *GetUserService) getUserByUsernameImpl(username string) (*GetUser, error) {
+	domainUser, err := s.userStorage.GetUserByUsername(username)
 	if err != nil {
 		return nil, err
 	}

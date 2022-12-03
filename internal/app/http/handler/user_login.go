@@ -9,7 +9,7 @@ type UserLoginRequestBody struct {
 	Password string `json:"password" bind:"required"`
 }
 
-func (h *Handler) login(c *fiber.Ctx) error {
+func (h *HttpHandler) login(c *fiber.Ctx) error {
 	var userLoginReqBody UserLoginRequestBody
 
 	err := c.BodyParser(&userLoginReqBody)

@@ -65,7 +65,7 @@ func main() {
 
 	authService := auth.NewAuthService(getUserService)
 
-	httpHandler := handler.NewHandler(getUserService, getAccountService, authService)
+	httpHandler := handler.NewHttpHandler(getUserService, getAccountService, authService)
 
 	app := httpHandler.InitRoutes(&fiber.Config{
 		WriteTimeout: time.Duration(viper.GetInt("server.write_timeout")) * time.Second,

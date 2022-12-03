@@ -29,7 +29,7 @@ type inputTransfer struct {
 // @Failure 404 {object} error
 // @Failure 500 {object} error
 // @Router /transfer [post]
-func (h *Handler) transfer(c *fiber.Ctx) error {
+func (h *HttpHandler) transfer(c *fiber.Ctx) error {
 	jwtToken := c.Cookies("jwt")
 
 	token, err := h.services.Authorization.ParseJwtToken(jwtToken)

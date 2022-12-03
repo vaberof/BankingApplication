@@ -6,6 +6,6 @@ import (
 
 type UserStorage interface {
 	CreateUser(username string, password string) error
-	GetUser(username string) (*infra.User, error)
 	GetUserById(userId uint) (*infra.User, error)
+	GetUserByUsername(username string) (*infra.User, error)
 }

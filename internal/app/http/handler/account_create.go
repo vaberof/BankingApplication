@@ -8,7 +8,7 @@ type CreateAccountRequestBody struct {
 	Name string `json:"name"`
 }
 
-func (h *Handler) createAccount(c *fiber.Ctx) error {
+func (h *HttpHandler) createAccount(c *fiber.Ctx) error {
 	user, err := h.authService.AuthenticateUser(c.Cookies("jwt"))
 	if err != nil {
 		c.Status(fiber.StatusUnauthorized)
@@ -24,6 +24,14 @@ func (h *Handler) createAccount(c *fiber.Ctx) error {
 		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{
 			"error": "invalid request body",
+		})
+	}
+
+	_, err = h.accountService.GetAccount(user.Id, createAccountReqBody.Name)
+	if err == nil {
+		c.Status(fiber.StatusInternalServerError)
+		return c.JSON(fiber.Map{
+			"error": "account with this name already exist",
 		})
 	}
 

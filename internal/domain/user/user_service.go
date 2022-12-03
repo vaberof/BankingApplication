@@ -17,12 +17,12 @@ func (s *UserService) CreateUser(username string, password string) error {
 	return s.createUserImpl(username, password)
 }
 
-func (s *UserService) GetUser(username string) (*User, error) {
-	return s.getUserImpl(username)
-}
-
 func (s *UserService) GetUserById(userId uint) (*User, error) {
 	return s.getUserByIdImpl(userId)
+}
+
+func (s *UserService) GetUserByUsername(username string) (*User, error) {
+	return s.getUserByUsernameImpl(username)
 }
 
 func (s *UserService) createUserImpl(username string, password string) error {
@@ -39,8 +39,8 @@ func (s *UserService) createUserImpl(username string, password string) error {
 	return nil
 }
 
-func (s *UserService) getUserImpl(username string) (*User, error) {
-	infraUser, err := s.userStorage.GetUser(username)
+func (s *UserService) getUserByIdImpl(userId uint) (*User, error) {
+	infraUser, err := s.userStorage.GetUserById(userId)
 	if err != nil {
 		return nil, err
 	}
@@ -50,8 +50,8 @@ func (s *UserService) getUserImpl(username string) (*User, error) {
 	return domainUser, nil
 }
 
-func (s *UserService) getUserByIdImpl(userId uint) (*User, error) {
-	infraUser, err := s.userStorage.GetUserById(userId)
+func (s *UserService) getUserByUsernameImpl(username string) (*User, error) {
+	infraUser, err := s.userStorage.GetUserByUsername(username)
 	if err != nil {
 		return nil, err
 	}

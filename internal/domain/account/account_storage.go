@@ -9,6 +9,6 @@ type AccountStorage interface {
 	CreateCustomAccount(userId uint, accountName string) error
 	GetAccount(userId uint, accountName string) (*accountpg.Account, error)
 	GetAccounts(userId uint) ([]*accountpg.Account, error)
-	UpdateBalance(userId uint, accountName string, balance int) error
 	DeleteAccount(userId uint, accountName string) error
+	UpdateBalance(userId uint, accountName string, balance int) error
 }

@@ -6,31 +6,33 @@ import (
 	_ "github.com/vaberof/banking_app/docs"
 )
 
-type Handler struct {
+type HttpHandler struct {
 	userService    UserService
 	accountService AccountService
 	authService    AuthorizationService
 }
 
-func NewHandler(userService UserService, accountService AccountService, authService AuthorizationService) *Handler {
-	return &Handler{
+func NewHttpHandler(userService UserService, accountService AccountService, authService AuthorizationService) *HttpHandler {
+	return &HttpHandler{
 		userService:    userService,
 		accountService: accountService,
 		authService:    authService,
 	}
 }
 
-func (h *Handler) InitRoutes(config *fiber.Config) *fiber.App {
+func (h *HttpHandler) InitRoutes(config *fiber.Config) *fiber.App {
 	app := fiber.New(*config)
 
 	app.Get("/swagger/*", swagger.HandlerDefault)
 
-	app.Post("/signup", h.signup)
+	app.Post("/register", h.register)
 	app.Post("/login", h.login)
-	//app.Post("/logout", h.logout)
-	//app.Get("/balance", h.getBalance)
+	app.Post("/logout", h.logout)
+
 	app.Post("/account", h.createAccount)
-	//app.Delete("/account", h.deleteAccount)
+	app.Delete("/account", h.deleteAccount)
+	app.Get("/accounts", h.getAccounts)
+
 	//app.Post("/transfer", h.transfer)
 	//app.Get("/transfers", h.getTransfers)
 	//app.Get("/deposits", h.getDeposits)
