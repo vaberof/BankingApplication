@@ -4,7 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type CreateAccountRequestBody struct {
+type createAccountRequestBody struct {
 	Name string `json:"name"`
 }
 
@@ -17,7 +17,7 @@ func (h *HttpHandler) createAccount(c *fiber.Ctx) error {
 		})
 	}
 
-	var createAccountReqBody CreateAccountRequestBody
+	var createAccountReqBody createAccountRequestBody
 
 	err = c.BodyParser(&createAccountReqBody)
 	if err != nil {
@@ -27,24 +27,16 @@ func (h *HttpHandler) createAccount(c *fiber.Ctx) error {
 		})
 	}
 
-	_, err = h.accountService.GetAccount(user.Id, createAccountReqBody.Name)
-	if err == nil {
-		c.Status(fiber.StatusInternalServerError)
-		return c.JSON(fiber.Map{
-			"error": "account with this name already exist",
-		})
-	}
-
 	err = h.accountService.CreateCustomAccount(user.Id, createAccountReqBody.Name)
 	if err != nil {
 		c.Status(fiber.StatusInternalServerError)
 		return c.JSON(fiber.Map{
-			"error": "cannot create account",
+			"error": err,
 		})
 	}
 
 	c.Status(fiber.StatusOK)
 	return c.JSON(fiber.Map{
-		"error": "successfully created an account",
+		"message": "successfully created an account",
 	})
 }

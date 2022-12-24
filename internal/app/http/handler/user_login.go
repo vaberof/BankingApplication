@@ -4,13 +4,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type UserLoginRequestBody struct {
+type userLoginRequestBody struct {
 	Username string `json:"username" bind:"required"`
 	Password string `json:"password" bind:"required"`
 }
 
 func (h *HttpHandler) login(c *fiber.Ctx) error {
-	var userLoginReqBody UserLoginRequestBody
+	var userLoginReqBody userLoginRequestBody
 
 	err := c.BodyParser(&userLoginReqBody)
 	if err != nil {

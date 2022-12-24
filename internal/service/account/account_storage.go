@@ -7,8 +7,8 @@ import (
 type AccountStorage interface {
 	CreateInitialAccount(userId uint) error
 	CreateCustomAccount(userId uint, accountName string) error
-	GetAccount(userId uint, accountName string) (*domain.Account, error)
+	GetAccountByName(userId uint, accountName string) (*domain.Account, error)
+	GetAccountById(userId uint, accountId uint) (*domain.Account, error)
 	GetAccounts(userId uint) ([]*domain.Account, error)
 	DeleteAccount(userId uint, accountName string) error
-	UpdateBalance(userId uint, accountName string, balance int) error
 }

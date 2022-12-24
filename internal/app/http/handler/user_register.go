@@ -4,13 +4,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type CreateUserRequestBody struct {
+type createUserRequestBody struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
 func (h *HttpHandler) register(c *fiber.Ctx) error {
-	var createUserReqBody CreateUserRequestBody
+	var createUserReqBody createUserRequestBody
 
 	err := c.BodyParser(&createUserReqBody)
 	if err != nil {
@@ -20,40 +20,17 @@ func (h *HttpHandler) register(c *fiber.Ctx) error {
 		})
 	}
 
-	_, err = h.userService.GetUserByUsername(createUserReqBody.Username)
-	if err == nil {
-		c.Status(fiber.StatusBadRequest)
-		return c.JSON(fiber.Map{
-			"error": "user with this username already exist",
-		})
-	}
-
-	err = h.userService.CreateUser(createUserReqBody.Username, createUserReqBody.Password)
+	userId, err := h.userService.CreateUser(createUserReqBody.Username, createUserReqBody.Password)
 	if err != nil {
 		c.Status(fiber.StatusInternalServerError)
 		return c.JSON(fiber.Map{
-			"error": "cannot create user",
-		})
-	}
-
-	user, err := h.userService.GetUserByUsername(createUserReqBody.Username)
-	if err != nil {
-		c.Status(fiber.StatusInternalServerError)
-		return c.JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	err = h.accountService.CreateInitialAccount(user.Id)
-	if err != nil {
-		c.Status(fiber.StatusInternalServerError)
-		return c.JSON(fiber.Map{
-			"error": err.Error(),
+			"error": err,
 		})
 	}
 
 	c.Status(fiber.StatusOK)
 	return c.JSON(fiber.Map{
 		"message": "successfully created a user",
+		"id":      userId,
 	})
 }

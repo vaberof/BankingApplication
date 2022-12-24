@@ -2,7 +2,7 @@ package handler
 
 import "github.com/gofiber/fiber/v2"
 
-type DeleteAccountRequestBody struct {
+type deleteAccountRequestBody struct {
 	Name string `json:"name"`
 }
 
@@ -15,7 +15,7 @@ func (h *HttpHandler) deleteAccount(c *fiber.Ctx) error {
 		})
 	}
 
-	var deleteAccountReqBody DeleteAccountRequestBody
+	var deleteAccountReqBody deleteAccountRequestBody
 
 	err = c.BodyParser(&deleteAccountReqBody)
 	if err != nil {

@@ -9,9 +9,11 @@ import (
 	"github.com/vaberof/MockBankingApplication/internal/domain/user"
 	"github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres"
 	"github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres/accountpg"
+	"github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres/transferpg"
 	"github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres/userpg"
 	getaccount "github.com/vaberof/MockBankingApplication/internal/service/account"
 	"github.com/vaberof/MockBankingApplication/internal/service/auth"
+	"github.com/vaberof/MockBankingApplication/internal/service/transfer"
 	getuser "github.com/vaberof/MockBankingApplication/internal/service/user"
 	"log"
 	"os"
@@ -49,23 +51,26 @@ func main() {
 		log.Fatalf("cannot connect to database %s", err.Error())
 	}
 
-	err = db.AutoMigrate(&accountpg.Account{}, &userpg.User{})
+	err = db.AutoMigrate(&accountpg.Account{}, &userpg.User{}, &transferpg.Transfer{})
 	if err != nil {
 		log.Fatalf("cannot auto migrate models %s", err.Error())
 	}
 
 	userStoragePostgres := userpg.NewPostgresUserStorage(db)
 	accountStoragePostgres := accountpg.NewPostgresAccountStorage(db)
+	transferStoragePostgres := transferpg.NewPostgresTransferStorage(db, accountStoragePostgres)
 
-	userService := user.NewUserService(userStoragePostgres)
+	userService := user.NewUserService(userStoragePostgres, accountStoragePostgres)
 	accountService := account.NewAccountService(accountStoragePostgres)
 
 	getUserService := getuser.NewGetUserService(userService)
 	getAccountService := getaccount.NewGetAccountService(accountService)
 
+	transferService := transfer.NewTransferService(transferStoragePostgres)
+
 	authService := auth.NewAuthService(getUserService)
 
-	httpHandler := handler.NewHttpHandler(getUserService, getAccountService, authService)
+	httpHandler := handler.NewHttpHandler(getUserService, getAccountService, transferService, authService)
 
 	app := httpHandler.InitRoutes(&fiber.Config{
 		WriteTimeout: time.Duration(viper.GetInt("server.write_timeout")) * time.Second,

@@ -1,19 +1,20 @@
 package user
 
 import (
-	infra "github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres/userpg"
+	"errors"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {
-	userStorage UserStorage
+	userStorage    UserStorage
+	accountStorage AccountStorage
 }
 
-func NewUserService(userStorage UserStorage) *UserService {
-	return &UserService{userStorage: userStorage}
+func NewUserService(userStorage UserStorage, accountStorage AccountStorage) *UserService {
+	return &UserService{userStorage: userStorage, accountStorage: accountStorage}
 }
 
-func (s *UserService) CreateUser(username string, password string) error {
+func (s *UserService) CreateUser(username string, password string) (uint, error) {
 	return s.createUserImpl(username, password)
 }
 
@@ -25,50 +26,46 @@ func (s *UserService) GetUserByUsername(username string) (*User, error) {
 	return s.getUserByUsernameImpl(username)
 }
 
-func (s *UserService) createUserImpl(username string, password string) error {
+func (s *UserService) createUserImpl(username string, password string) (uint, error) {
+	user, err := s.GetUserByUsername(username)
+	if user != nil || err == nil {
+		return 0, errors.New("user with this username already exist")
+	}
+
 	hashedPassword, err := s.hashPassword(password)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	err = s.userStorage.CreateUser(username, hashedPassword)
+	userId, err := s.userStorage.CreateUser(username, hashedPassword)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	err = s.accountStorage.CreateInitialAccount(userId)
+	if err != nil {
+		return 0, errors.New("cannot create initial account")
+	}
+
+	return userId, nil
 }
 
 func (s *UserService) getUserByIdImpl(userId uint) (*User, error) {
-	infraUser, err := s.userStorage.GetUserById(userId)
+	user, err := s.userStorage.GetUserById(userId)
 	if err != nil {
 		return nil, err
 	}
 
-	domainUser := s.infraUserToDomain(infraUser)
-
-	return domainUser, nil
+	return user, nil
 }
 
 func (s *UserService) getUserByUsernameImpl(username string) (*User, error) {
-	infraUser, err := s.userStorage.GetUserByUsername(username)
+	user, err := s.userStorage.GetUserByUsername(username)
 	if err != nil {
 		return nil, err
 	}
 
-	domainUser := s.infraUserToDomain(infraUser)
-
-	return domainUser, nil
-}
-
-func (s *UserService) infraUserToDomain(infraUser *infra.User) *User {
-	var user User
-
-	user.Id = infraUser.Id
-	user.Username = infraUser.Username
-	user.Password = infraUser.Password
-
-	return &user
+	return user, nil
 }
 
 func (s *UserService) hashPassword(password string) (string, error) {

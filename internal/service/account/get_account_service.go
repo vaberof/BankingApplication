@@ -20,24 +20,34 @@ func (s *GetAccountService) CreateCustomAccount(userId uint, accountName string)
 	return s.accountStorage.CreateCustomAccount(userId, accountName)
 }
 
-func (s *GetAccountService) UpdateBalance(userId uint, accountName string, balance int) error {
-	return s.accountStorage.UpdateBalance(userId, accountName, balance)
-}
-
 func (s *GetAccountService) DeleteAccount(userId uint, accountName string) error {
 	return s.accountStorage.DeleteAccount(userId, accountName)
 }
 
-func (s *GetAccountService) GetAccount(userId uint, accountName string) (*GetAccount, error) {
-	return s.getAccountImpl(userId, accountName)
+func (s *GetAccountService) GetAccountByName(userId uint, accountName string) (*GetAccount, error) {
+	return s.getAccountByNameImpl(userId, accountName)
+}
+
+func (s *GetAccountService) GetAccountById(userId uint, accountId uint) (*GetAccount, error) {
+	return s.getAccountByIdImpl(userId, accountId)
 }
 
 func (s *GetAccountService) GetAccounts(userId uint) ([]*GetAccount, error) {
 	return s.getAccountsImpl(userId)
 }
 
-func (s *GetAccountService) getAccountImpl(userId uint, accountName string) (*GetAccount, error) {
-	domainAccount, err := s.accountStorage.GetAccount(userId, accountName)
+func (s *GetAccountService) getAccountByNameImpl(userId uint, accountName string) (*GetAccount, error) {
+	domainAccount, err := s.accountStorage.GetAccountByName(userId, accountName)
+	if err != nil {
+		return nil, err
+	}
+
+	getAccount := s.domainAccountToGetAccount(domainAccount)
+	return getAccount, nil
+}
+
+func (s *GetAccountService) getAccountByIdImpl(userId uint, accountId uint) (*GetAccount, error) {
+	domainAccount, err := s.accountStorage.GetAccountById(userId, accountId)
 	if err != nil {
 		return nil, err
 	}
@@ -59,6 +69,7 @@ func (s *GetAccountService) getAccountsImpl(userId uint) ([]*GetAccount, error) 
 func (s *GetAccountService) domainAccountToGetAccount(domainAccount *domain.Account) *GetAccount {
 	var account GetAccount
 
+	account.Id = domainAccount.Id
 	account.UserId = domainAccount.UserId
 	account.Type = domainAccount.Type
 	account.Name = domainAccount.Name

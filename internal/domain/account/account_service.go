@@ -1,8 +1,6 @@
 package account
 
-import (
-	infra "github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres/accountpg"
-)
+import "errors"
 
 type AccountService struct {
 	accountStorage AccountStorage
@@ -17,65 +15,62 @@ func (s *AccountService) CreateInitialAccount(userId uint) error {
 }
 
 func (s *AccountService) CreateCustomAccount(userId uint, accountName string) error {
-	return s.accountStorage.CreateCustomAccount(userId, accountName)
-}
-
-func (s *AccountService) UpdateBalance(userId uint, accountName string, balance int) error {
-	return s.accountStorage.UpdateBalance(userId, accountName, balance)
+	return s.createCustomAccountImpl(userId, accountName)
 }
 
 func (s *AccountService) DeleteAccount(userId uint, accountName string) error {
 	return s.accountStorage.DeleteAccount(userId, accountName)
 }
 
-func (s *AccountService) GetAccount(userId uint, accountName string) (*Account, error) {
-	return s.getAccountImpl(userId, accountName)
+func (s *AccountService) GetAccountByName(userId uint, accountName string) (*Account, error) {
+	return s.getAccountByNameImpl(userId, accountName)
+}
+
+func (s *AccountService) GetAccountById(userId uint, accountId uint) (*Account, error) {
+	return s.getAccountByIdImpl(userId, accountId)
 }
 
 func (s *AccountService) GetAccounts(userId uint) ([]*Account, error) {
 	return s.getAccountsImpl(userId)
 }
 
-func (s *AccountService) getAccountImpl(userId uint, accountName string) (*Account, error) {
-	infraAccount, err := s.accountStorage.GetAccount(userId, accountName)
+func (s *AccountService) createCustomAccountImpl(userId uint, accountName string) error {
+	account, err := s.GetAccountByName(userId, accountName)
+	if account != nil || err == nil {
+		return errors.New("account with this name already exist")
+	}
+
+	err = s.accountStorage.CreateCustomAccount(userId, accountName)
+	if err != nil {
+		return errors.New("cannot create account")
+	}
+
+	return err
+}
+
+func (s *AccountService) getAccountByNameImpl(userId uint, accountName string) (*Account, error) {
+	account, err := s.accountStorage.GetAccountByName(userId, accountName)
 	if err != nil {
 		return nil, err
 	}
 
-	domainAccount := s.infraAccountToDomain(infraAccount)
+	return account, nil
+}
 
-	return domainAccount, nil
+func (s *AccountService) getAccountByIdImpl(userId uint, accountId uint) (*Account, error) {
+	account, err := s.accountStorage.GetAccountById(userId, accountId)
+	if err != nil {
+		return nil, err
+	}
+
+	return account, nil
 }
 
 func (s *AccountService) getAccountsImpl(userId uint) ([]*Account, error) {
-	infraAccounts, err := s.accountStorage.GetAccounts(userId)
+	accounts, err := s.accountStorage.GetAccounts(userId)
 	if err != nil {
 		return nil, err
 	}
 
-	domainAccounts := s.infraAccountsToDomain(infraAccounts)
-
-	return domainAccounts, nil
-}
-
-func (s *AccountService) infraAccountToDomain(infraAccount *infra.Account) *Account {
-	var account Account
-
-	account.UserId = infraAccount.UserId
-	account.Type = infraAccount.Type
-	account.Name = infraAccount.Name
-	account.Balance = infraAccount.Balance
-
-	return &account
-}
-
-func (s *AccountService) infraAccountsToDomain(infraAccounts []*infra.Account) []*Account {
-	var accounts []*Account
-
-	for i := 0; i < len(infraAccounts); i++ {
-		infraAccount := infraAccounts[i]
-		accounts = append(accounts, s.infraAccountToDomain(infraAccount))
-	}
-
-	return accounts
+	return accounts, nil
 }
