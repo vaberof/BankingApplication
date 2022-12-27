@@ -9,10 +9,12 @@ import (
 	"github.com/vaberof/MockBankingApplication/internal/domain/user"
 	"github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres"
 	"github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres/accountpg"
+	"github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres/depositpg"
 	"github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres/transferpg"
 	"github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres/userpg"
 	getaccount "github.com/vaberof/MockBankingApplication/internal/service/account"
 	"github.com/vaberof/MockBankingApplication/internal/service/auth"
+	"github.com/vaberof/MockBankingApplication/internal/service/deposit"
 	"github.com/vaberof/MockBankingApplication/internal/service/transfer"
 	getuser "github.com/vaberof/MockBankingApplication/internal/service/user"
 	"log"
@@ -51,7 +53,7 @@ func main() {
 		log.Fatalf("cannot connect to database %s", err.Error())
 	}
 
-	err = db.AutoMigrate(&accountpg.Account{}, &userpg.User{}, &transferpg.Transfer{})
+	err = db.AutoMigrate(&accountpg.Account{}, &userpg.User{}, &transferpg.Transfer{}, &depositpg.Deposit{})
 	if err != nil {
 		log.Fatalf("cannot auto migrate models %s", err.Error())
 	}
@@ -59,18 +61,20 @@ func main() {
 	userStoragePostgres := userpg.NewPostgresUserStorage(db)
 	accountStoragePostgres := accountpg.NewPostgresAccountStorage(db)
 	transferStoragePostgres := transferpg.NewPostgresTransferStorage(db, accountStoragePostgres)
+	depositStoragePostgres := depositpg.NewPostgresDepositStorage(db)
 
 	userService := user.NewUserService(userStoragePostgres, accountStoragePostgres)
 	accountService := account.NewAccountService(accountStoragePostgres)
+	depositService := deposit.NewDepositService(depositStoragePostgres, userStoragePostgres)
 
 	getUserService := getuser.NewGetUserService(userService)
-	getAccountService := getaccount.NewGetAccountService(accountService)
+	getAccountResponseService := getaccount.NewGetAccountService(accountService)
 
-	transferService := transfer.NewTransferService(transferStoragePostgres)
+	transferService := transfer.NewTransferService(transferStoragePostgres, depositService)
 
 	authService := auth.NewAuthService(getUserService)
 
-	httpHandler := handler.NewHttpHandler(getUserService, getAccountService, transferService, authService)
+	httpHandler := handler.NewHttpHandler(userService, getAccountResponseService, transferService, authService)
 
 	app := httpHandler.InitRoutes(&fiber.Config{
 		WriteTimeout: time.Duration(viper.GetInt("server.write_timeout")) * time.Second,

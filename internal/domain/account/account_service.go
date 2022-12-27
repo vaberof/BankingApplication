@@ -51,7 +51,7 @@ func (s *AccountService) createCustomAccountImpl(userId uint, accountName string
 func (s *AccountService) getAccountByNameImpl(userId uint, accountName string) (*Account, error) {
 	account, err := s.accountStorage.GetAccountByName(userId, accountName)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("cannot find account with this name")
 	}
 
 	return account, nil
@@ -60,7 +60,7 @@ func (s *AccountService) getAccountByNameImpl(userId uint, accountName string) (
 func (s *AccountService) getAccountByIdImpl(userId uint, accountId uint) (*Account, error) {
 	account, err := s.accountStorage.GetAccountById(userId, accountId)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("cannot find account with this id")
 	}
 
 	return account, nil
@@ -69,7 +69,7 @@ func (s *AccountService) getAccountByIdImpl(userId uint, accountId uint) (*Accou
 func (s *AccountService) getAccountsImpl(userId uint) ([]*Account, error) {
 	accounts, err := s.accountStorage.GetAccounts(userId)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("cannot find any accounts")
 	}
 
 	return accounts, nil

@@ -21,7 +21,7 @@ func NewAuthService(getUserService GetUserService) *AuthService {
 	}
 }
 
-func (s *AuthService) AuthenticateUser(jwtToken string) (*getuser.GetUser, error) {
+func (s *AuthService) AuthenticateUser(jwtToken string) (*getuser.GetUserResponse, error) {
 	token, err := s.parseJwtToken(jwtToken)
 	if err != nil {
 		return nil, err

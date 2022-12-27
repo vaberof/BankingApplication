@@ -15,7 +15,7 @@ func (h *HttpHandler) getAccounts(c *fiber.Ctx) error {
 	if err != nil {
 		c.Status(fiber.StatusInternalServerError)
 		return c.JSON(fiber.Map{
-			"error": "cant find account",
+			"error": err.Error(),
 		})
 	}
 

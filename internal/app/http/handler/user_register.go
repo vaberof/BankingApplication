@@ -24,7 +24,7 @@ func (h *HttpHandler) register(c *fiber.Ctx) error {
 	if err != nil {
 		c.Status(fiber.StatusInternalServerError)
 		return c.JSON(fiber.Map{
-			"error": err,
+			"error": err.Error(),
 		})
 	}
 

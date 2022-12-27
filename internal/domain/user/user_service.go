@@ -27,8 +27,8 @@ func (s *UserService) GetUserByUsername(username string) (*User, error) {
 }
 
 func (s *UserService) createUserImpl(username string, password string) (uint, error) {
-	user, err := s.GetUserByUsername(username)
-	if user != nil || err == nil {
+	_, err := s.GetUserByUsername(username)
+	if err == nil {
 		return 0, errors.New("user with this username already exist")
 	}
 

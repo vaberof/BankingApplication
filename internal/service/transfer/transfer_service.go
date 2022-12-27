@@ -4,10 +4,14 @@ import "errors"
 
 type TransferService struct {
 	transferStorage TransferStorage
+	depositService  DepositService
 }
 
-func NewTransferService(transferStorage TransferStorage) *TransferService {
-	return &TransferService{transferStorage: transferStorage}
+func NewTransferService(transferStorage TransferStorage, depositService DepositService) *TransferService {
+	return &TransferService{
+		transferStorage: transferStorage,
+		depositService:  depositService,
+	}
 }
 
 func (s *TransferService) MakeTransfer(senderId uint, senderAccountId uint, payeeId uint, payeeAccountId uint, amount uint) error {
@@ -20,12 +24,22 @@ func (s *TransferService) makeTransferImpl(senderId uint, senderAccountId uint, 
 		return err
 	}
 
-	return s.transferStorage.MakeTransfer(senderId, senderAccountId, payeeId, payeeAccountId, amount, transferType)
+	err = s.transferStorage.MakeTransfer(senderId, senderAccountId, payeeId, payeeAccountId, amount, transferType)
+	if err != nil {
+		return err
+	}
+
+	err = s.depositService.SaveDeposit(senderId, senderAccountId, payeeId, payeeAccountId, amount, transferType)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *TransferService) preprocessTransfer(senderId uint, payeeId uint, amount uint) (string, error) {
 	if !s.isAcceptableAmount(amount) {
-		return "", errors.New("amount should be greater than 0")
+		return "", errors.New("amount must be greater than 0")
 	}
 
 	transferType := s.getTransferType(senderId, payeeId)
