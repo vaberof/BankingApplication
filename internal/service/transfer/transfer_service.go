@@ -18,6 +18,10 @@ func (s *TransferService) MakeTransfer(senderId uint, senderAccountId uint, paye
 	return s.makeTransferImpl(senderId, senderAccountId, payeeId, payeeAccountId, amount)
 }
 
+func (s *TransferService) GetTransfers(userId uint) ([]*Transfer, error) {
+	return s.getTransfersImpl(userId)
+}
+
 func (s *TransferService) makeTransferImpl(senderId uint, senderAccountId uint, payeeId uint, payeeAccountId uint, amount uint) error {
 	transferType, err := s.preprocessTransfer(senderId, payeeId, amount)
 	if err != nil {
@@ -45,6 +49,19 @@ func (s *TransferService) preprocessTransfer(senderId uint, payeeId uint, amount
 	transferType := s.getTransferType(senderId, payeeId)
 
 	return transferType, nil
+}
+
+func (s *TransferService) getTransfersImpl(userId uint) ([]*Transfer, error) {
+	transfers, err := s.transferStorage.GetTransfers(userId)
+	if err != nil {
+		return nil, errors.New("cannot get transfers")
+	}
+
+	if len(transfers) == 0 {
+		return nil, errors.New("you have not made any transfers yet")
+	}
+
+	return transfers, nil
 }
 
 func (s *TransferService) getTransferType(senderId uint, payeeId uint) string {

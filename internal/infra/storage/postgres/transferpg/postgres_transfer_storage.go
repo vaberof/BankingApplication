@@ -2,7 +2,9 @@ package transferpg
 
 import (
 	"errors"
+	"github.com/sirupsen/logrus"
 	"github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres/accountpg"
+	"github.com/vaberof/MockBankingApplication/internal/service/transfer"
 	"gorm.io/gorm"
 )
 
@@ -22,7 +24,7 @@ func (s *PostgresTransferStorage) MakeTransfer(senderId uint, senderAccountId ui
 	return s.makeTransferImpl(senderId, senderAccountId, payeeId, payeeAccountId, amount, transferType)
 }
 
-func (s *PostgresTransferStorage) GetTransfers(userId uint) []*Transfer {
+func (s *PostgresTransferStorage) GetTransfers(userId uint) ([]*transfer.Transfer, error) {
 	return s.getTransfersImpl(userId)
 }
 
@@ -122,6 +124,19 @@ func (s *PostgresTransferStorage) saveTransfer(
 	return nil
 }
 
-func (s *PostgresTransferStorage) getTransfersImpl(userId uint) []*Transfer {
-	return nil
+func (s *PostgresTransferStorage) getTransfersImpl(userId uint) ([]*transfer.Transfer, error) {
+	var infraTransfers []*Transfer
+
+	err := s.db.Table("transfers").Where("sender_id = ?", userId).Find(&infraTransfers).Error
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"layer": "infra",
+			"func":  "getTransfersImpl",
+		}).Error(err)
+		return nil, err
+	}
+
+	serviceTransfers := s.infraTransfersToService(infraTransfers)
+
+	return serviceTransfers, nil
 }

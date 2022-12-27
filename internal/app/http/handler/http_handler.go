@@ -36,7 +36,7 @@ func (h *HttpHandler) InitRoutes(config *fiber.Config) *fiber.App {
 	app.Get("/accounts", h.getAccounts)
 
 	app.Post("/transfer", h.makeTransfer)
-	//app.Get("/transfers", h.getTransfers)
+	app.Get("/transfers", h.getTransfers)
 	//app.Get("/deposits", h.getDeposits)
 
 	return app
