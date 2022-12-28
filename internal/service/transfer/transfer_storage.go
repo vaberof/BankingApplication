@@ -1,6 +1,15 @@
 package transfer
 
 type TransferStorage interface {
-	MakeTransfer(senderId uint, senderAccountId uint, payeeId uint, payeeAccountId uint, amount uint, transferType string) error
+	SaveTransfer(
+		senderId uint,
+		senderUsername string,
+		senderAccountId uint,
+		payeeId uint,
+		payeeUsername string,
+		payeeAccountId uint,
+		amount uint,
+		transferType string) error
+
 	GetTransfers(userId uint) ([]*Transfer, error)
 }

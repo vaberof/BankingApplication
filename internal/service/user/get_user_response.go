@@ -1,5 +1,6 @@
 package user
 
 type GetUserResponse struct {
-	Id uint
+	Id       uint
+	Username string
 }

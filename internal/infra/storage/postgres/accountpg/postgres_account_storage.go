@@ -35,8 +35,8 @@ func (s *PostgresAccountStorage) GetAccountByName(userId uint, accountName strin
 	return s.getAccountByNameImpl(userId, accountName)
 }
 
-func (s *PostgresAccountStorage) GetAccountById(userId uint, accountId uint) (*account.Account, error) {
-	return s.getAccountByIdImpl(userId, accountId)
+func (s *PostgresAccountStorage) GetAccountById(accountId uint) (*account.Account, error) {
+	return s.getAccountByIdImpl(accountId)
 }
 
 func (s *PostgresAccountStorage) GetAccounts(userId uint) ([]*account.Account, error) {
@@ -111,10 +111,10 @@ func (s *PostgresAccountStorage) getAccountByNameImpl(userId uint, accountName s
 	return domainAccount, nil
 }
 
-func (s *PostgresAccountStorage) getAccountByIdImpl(userId uint, accountId uint) (*account.Account, error) {
+func (s *PostgresAccountStorage) getAccountByIdImpl(accountId uint) (*account.Account, error) {
 	var infraAccount Account
 
-	err := s.db.Table("accounts").Where("id = ? AND user_id = ?", accountId, userId).First(&infraAccount).Error
+	err := s.db.Table("accounts").Where("id = ?", accountId).First(&infraAccount).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"layer": "infra",

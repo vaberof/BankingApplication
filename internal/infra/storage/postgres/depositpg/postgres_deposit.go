@@ -8,6 +8,7 @@ type Deposit struct {
 	SenderUsername  string
 	SenderAccountId uint
 	PayeeId         uint
+	PayeeUsername   string
 	PayeeAccountId  uint
 	Amount          uint
 	DepositType     string

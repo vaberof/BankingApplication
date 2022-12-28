@@ -2,8 +2,8 @@ package transfer
 
 type Transfer struct {
 	SenderAccountId uint
-	PayeeId         uint
 	PayeeAccountId  uint
+	PayeeUsername   string
 	Amount          uint
 	TransferType    string
 }

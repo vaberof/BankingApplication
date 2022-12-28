@@ -17,11 +17,12 @@ func (s *PostgresDepositStorage) SaveDeposit(
 	senderUsername string,
 	senderAccountId uint,
 	payeeId uint,
+	payeeUsername string,
 	payeeAccountId uint,
 	amount uint,
 	depositType string) error {
 
-	return s.saveDepositImpl(senderId, senderUsername, senderAccountId, payeeId, payeeAccountId, amount, depositType)
+	return s.saveDepositImpl(senderId, senderUsername, senderAccountId, payeeId, payeeUsername, payeeAccountId, amount, depositType)
 }
 
 func (s *PostgresDepositStorage) saveDepositImpl(
@@ -29,6 +30,7 @@ func (s *PostgresDepositStorage) saveDepositImpl(
 	senderUsername string,
 	senderAccountId uint,
 	payeeId uint,
+	payeeUsername string,
 	payeeAccountId uint,
 	amount uint,
 	depositType string) error {
@@ -39,6 +41,7 @@ func (s *PostgresDepositStorage) saveDepositImpl(
 	deposit.SenderUsername = senderUsername
 	deposit.SenderAccountId = senderAccountId
 	deposit.PayeeId = payeeId
+	deposit.PayeeUsername = payeeUsername
 	deposit.PayeeAccountId = payeeAccountId
 	deposit.Amount = amount
 	deposit.DepositType = depositType

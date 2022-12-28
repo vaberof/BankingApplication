@@ -26,8 +26,8 @@ func (s *AccountService) GetAccountByName(userId uint, accountName string) (*Acc
 	return s.getAccountByNameImpl(userId, accountName)
 }
 
-func (s *AccountService) GetAccountById(userId uint, accountId uint) (*Account, error) {
-	return s.getAccountByIdImpl(userId, accountId)
+func (s *AccountService) GetAccountById(accountId uint) (*Account, error) {
+	return s.getAccountByIdImpl(accountId)
 }
 
 func (s *AccountService) GetAccounts(userId uint) ([]*Account, error) {
@@ -57,8 +57,8 @@ func (s *AccountService) getAccountByNameImpl(userId uint, accountName string) (
 	return account, nil
 }
 
-func (s *AccountService) getAccountByIdImpl(userId uint, accountId uint) (*Account, error) {
-	account, err := s.accountStorage.GetAccountById(userId, accountId)
+func (s *AccountService) getAccountByIdImpl(accountId uint) (*Account, error) {
+	account, err := s.accountStorage.GetAccountById(accountId)
 	if err != nil {
 		return nil, errors.New("cannot find account with this id")
 	}

@@ -65,12 +65,12 @@ func main() {
 
 	userService := user.NewUserService(userStoragePostgres, accountStoragePostgres)
 	accountService := account.NewAccountService(accountStoragePostgres)
-	depositService := deposit.NewDepositService(depositStoragePostgres, userStoragePostgres)
+	depositService := deposit.NewDepositService(depositStoragePostgres)
 
 	getUserService := getuser.NewGetUserService(userService)
 	getAccountResponseService := getaccount.NewGetAccountService(accountService)
 
-	transferService := transfer.NewTransferService(transferStoragePostgres, depositService)
+	transferService := transfer.NewTransferService(transferStoragePostgres, depositService, accountStoragePostgres, getUserService)
 
 	authService := auth.NewAuthService(getUserService)
 

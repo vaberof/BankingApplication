@@ -8,7 +8,7 @@ func (s *PostgresTransferStorage) infraTransferToService(infraTransfer *Transfer
 	var serviceTransfer transfer.Transfer
 
 	serviceTransfer.SenderAccountId = infraTransfer.SenderAccountId
-	serviceTransfer.PayeeId = infraTransfer.PayeeId
+	serviceTransfer.PayeeUsername = infraTransfer.PayeeUsername
 	serviceTransfer.PayeeAccountId = infraTransfer.PayeeAccountId
 	serviceTransfer.Amount = infraTransfer.Amount
 	serviceTransfer.TransferType = infraTransfer.TransferType

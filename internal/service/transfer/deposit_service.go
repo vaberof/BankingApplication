@@ -1,5 +1,13 @@
 package transfer
 
 type DepositService interface {
-	SaveDeposit(senderId uint, senderAccountId uint, payeeId uint, payeeAccountId uint, amount uint, depositType string) error
+	SaveDeposit(
+		senderId uint,
+		senderUsername string,
+		senderAccountId uint,
+		payeeId uint,
+		payeeUsername string,
+		payeeAccountId uint,
+		amount uint,
+		depositType string) error
 }

@@ -6,7 +6,7 @@ import (
 )
 
 type AccountStorage interface {
-	GetAccountById(userId uint, accountId uint) (*account.Account, error)
+	GetAccountById(accountId uint) (*account.Account, error)
 	UpdateBalance(account *accountpg.Account, balance int) error
 	DomainAccountToInfra(domainAccount *account.Account) *accountpg.Account
 }

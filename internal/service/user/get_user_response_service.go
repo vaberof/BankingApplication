@@ -50,6 +50,7 @@ func (s *GetUserResponseService) domainUserToGetUser(domainUser *domain.User) *G
 	var getUser GetUserResponse
 
 	getUser.Id = domainUser.Id
+	getUser.Username = domainUser.Username
 
 	return &getUser
 }

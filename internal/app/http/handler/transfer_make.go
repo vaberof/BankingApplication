@@ -4,7 +4,6 @@ import "github.com/gofiber/fiber/v2"
 
 type makeTransferRequestBody struct {
 	SenderAccountId uint `json:"sender_account_id"`
-	PayeeId         uint `json:"payee_id"`
 	PayeeAccountId  uint `json:"payee_account_id"`
 	Amount          uint `json:"amount"`
 }
@@ -31,7 +30,6 @@ func (h *HttpHandler) makeTransfer(c *fiber.Ctx) error {
 	err = h.transferService.MakeTransfer(
 		user.Id,
 		makeTransferReqBody.SenderAccountId,
-		makeTransferReqBody.PayeeId,
 		makeTransferReqBody.PayeeAccountId,
 		makeTransferReqBody.Amount)
 

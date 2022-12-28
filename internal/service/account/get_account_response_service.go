@@ -28,8 +28,8 @@ func (s *GetAccountResponseService) GetAccountByName(userId uint, accountName st
 	return s.getAccountByNameImpl(userId, accountName)
 }
 
-func (s *GetAccountResponseService) GetAccountById(userId uint, accountId uint) (*GetAccountResponse, error) {
-	return s.getAccountByIdImpl(userId, accountId)
+func (s *GetAccountResponseService) GetAccountById(accountId uint) (*GetAccountResponse, error) {
+	return s.getAccountByIdImpl(accountId)
 }
 
 func (s *GetAccountResponseService) GetAccounts(userId uint) ([]*GetAccountResponse, error) {
@@ -46,8 +46,8 @@ func (s *GetAccountResponseService) getAccountByNameImpl(userId uint, accountNam
 	return getAccount, nil
 }
 
-func (s *GetAccountResponseService) getAccountByIdImpl(userId uint, accountId uint) (*GetAccountResponse, error) {
-	domainAccount, err := s.accountStorage.GetAccountById(userId, accountId)
+func (s *GetAccountResponseService) getAccountByIdImpl(accountId uint) (*GetAccountResponse, error) {
+	domainAccount, err := s.accountStorage.GetAccountById(accountId)
 	if err != nil {
 		return nil, err
 	}
