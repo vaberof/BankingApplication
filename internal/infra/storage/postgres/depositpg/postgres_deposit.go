@@ -11,6 +11,5 @@ type Deposit struct {
 	PayeeUsername   string
 	PayeeAccountId  uint
 	Amount          uint
-	DepositType     string
 	CreatedAt       time.Time `gorm:"autoCreateTime"`
 }

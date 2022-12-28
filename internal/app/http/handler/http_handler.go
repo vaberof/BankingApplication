@@ -10,14 +10,22 @@ type HttpHandler struct {
 	userService     UserService
 	accountService  AccountService
 	transferService TransferService
+	depositService  DepositService
 	authService     AuthorizationService
 }
 
-func NewHttpHandler(userService UserService, accountService AccountService, transferService TransferService, authService AuthorizationService) *HttpHandler {
+func NewHttpHandler(
+	userService UserService,
+	accountService AccountService,
+	transferService TransferService,
+	depositService DepositService,
+	authService AuthorizationService) *HttpHandler {
+
 	return &HttpHandler{
 		userService:     userService,
 		accountService:  accountService,
 		transferService: transferService,
+		depositService:  depositService,
 		authService:     authService,
 	}
 }
@@ -37,7 +45,8 @@ func (h *HttpHandler) InitRoutes(config *fiber.Config) *fiber.App {
 
 	app.Post("/transfer", h.makeTransfer)
 	app.Get("/transfers", h.getTransfers)
-	//app.Get("/deposits", h.getDeposits)
+
+	app.Get("/deposits", h.getDeposits)
 
 	return app
 }

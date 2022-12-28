@@ -8,6 +8,7 @@ type DepositStorage interface {
 		payeeId uint,
 		payeeUsername string,
 		payeeAccountId uint,
-		amount uint,
-		depositType string) error
+		amount uint) error
+
+	GetDeposits(userId uint) ([]*Deposit, error)
 }

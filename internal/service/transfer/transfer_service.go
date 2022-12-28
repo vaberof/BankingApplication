@@ -51,7 +51,7 @@ func (s *TransferService) makeTransferImpl(senderId uint, senderAccountId uint, 
 		return nil
 	}
 
-	err = s.depositService.SaveDeposit(senderId, senderUsername, senderAccountId, payeeId, payeeUsername, payeeAccountId, amount, transferType)
+	err = s.depositService.SaveDeposit(senderId, senderUsername, senderAccountId, payeeId, payeeUsername, payeeAccountId, amount)
 	if err != nil {
 		return err
 	}
