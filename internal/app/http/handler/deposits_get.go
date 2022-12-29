@@ -13,6 +13,15 @@ type GetDepositResponse struct {
 	Date            time.Time `json:"date"`
 }
 
+//	@Summary		Get all deposits
+//	@Tags			Deposit
+//	@Description	Get all deposits other clients have made to your accounts
+//	@ID				Gets deposits
+//	@Produce		json
+//	@Success		200	{string}	error
+//	@Failure		401	{object}	error
+//	@Failure		500	{object}	error
+//	@Router			/deposits [get]
 func (h *HttpHandler) getDeposits(c *fiber.Ctx) error {
 	user, err := h.authService.AuthenticateUser(c.Cookies("jwt"))
 	if err != nil {

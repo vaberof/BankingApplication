@@ -9,6 +9,17 @@ type createUserRequestBody struct {
 	Password string `json:"password" binding:"required"`
 }
 
+//	@Summary		Register
+//	@Tags			Auth
+//	@Description	Register new user
+//	@ID				Registers new user
+//	@Accept			json
+//	@Produce		json
+//	@Param			input	body		createUserRequestBody	true	"user data"
+//	@Success		200		{string}	error
+//	@Failure		400		{object}	error
+//	@Failure		500		{object}	error
+//	@Router			/register [post]
 func (h *HttpHandler) register(c *fiber.Ctx) error {
 	var createUserReqBody createUserRequestBody
 

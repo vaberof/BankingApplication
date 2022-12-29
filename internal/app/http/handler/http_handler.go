@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/swagger"
 	_ "github.com/vaberof/MockBankingApplication/docs"
 )
@@ -33,20 +34,33 @@ func NewHttpHandler(
 func (h *HttpHandler) InitRoutes(config *fiber.Config) *fiber.App {
 	app := fiber.New(*config)
 
+	h.configureCors(app)
+
 	app.Get("/swagger/*", swagger.HandlerDefault)
 
-	app.Post("/register", h.register)
-	app.Post("/login", h.login)
-	app.Post("/logout", h.logout)
+	api := app.Group("/api")
+	{
+		api.Post("/register", h.register)
+		api.Post("/login", h.login)
+		api.Post("/logout", h.logout)
 
-	app.Post("/account", h.createAccount)
-	app.Delete("/account", h.deleteAccount)
-	app.Get("/accounts", h.getAccounts)
+		api.Post("/account", h.createAccount)
+		api.Delete("/account", h.deleteAccount)
+		api.Get("/accounts", h.getAccounts)
 
-	app.Post("/transfer", h.makeTransfer)
-	app.Get("/transfers", h.getTransfers)
+		api.Post("/transfer", h.makeTransfer)
+		api.Get("/transfers", h.getTransfers)
 
-	app.Get("/deposits", h.getDeposits)
+		api.Get("/deposits", h.getDeposits)
+	}
 
 	return app
+}
+
+func (h *HttpHandler) configureCors(app *fiber.App) {
+	corsConfig := cors.Config{
+		AllowCredentials: true,
+	}
+
+	app.Use(cors.New(corsConfig))
 }

@@ -9,7 +9,7 @@ type GetUserResponseService struct {
 	userStorage UserStorage
 }
 
-func NewGetUserService(userStorage UserStorage) *GetUserResponseService {
+func NewGetUserResponseService(userStorage UserStorage) *GetUserResponseService {
 	return &GetUserResponseService{userStorage: userStorage}
 }
 

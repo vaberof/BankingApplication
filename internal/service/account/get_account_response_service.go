@@ -8,7 +8,7 @@ type GetAccountResponseService struct {
 	accountStorage AccountStorage
 }
 
-func NewGetAccountService(accountStorage AccountStorage) *GetAccountResponseService {
+func NewGetAccountResponseService(accountStorage AccountStorage) *GetAccountResponseService {
 	return &GetAccountResponseService{accountStorage: accountStorage}
 }
 

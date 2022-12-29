@@ -22,16 +22,16 @@ import (
 	"time"
 )
 
-// @title Banking App
-// @version 1.0
-// @description API Server for Mock Banking Application
+//	@title			Mock Banking Application API
+//	@version		1.0
+//	@description	API Server for Mock Banking Application
 
-// @host localhost:8080
-// @BasePath /
+//	@host		localhost:8080
+//	@BasePath	/api
 
-// @securityDefinition.apikey ApiKeyAuth
-// @in header
-// @name Authorization
+//	@securityDefinition.apikey	ApiKeyAuth
+//	@in							header
+//	@name						Authorization
 
 func main() {
 	if err := initConfig(); err != nil {
@@ -67,12 +67,12 @@ func main() {
 	accountService := account.NewAccountService(accountStoragePostgres)
 	depositService := deposit.NewDepositService(depositStoragePostgres)
 
-	getUserService := getuser.NewGetUserService(userService)
-	getAccountResponseService := getaccount.NewGetAccountService(accountService)
+	getUserResponseService := getuser.NewGetUserResponseService(userService)
+	getAccountResponseService := getaccount.NewGetAccountResponseService(accountService)
 
-	transferService := transfer.NewTransferService(transferStoragePostgres, depositService, accountStoragePostgres, getUserService)
+	transferService := transfer.NewTransferService(transferStoragePostgres, depositService, accountStoragePostgres, getUserResponseService)
 
-	authService := auth.NewAuthService(getUserService)
+	authService := auth.NewAuthService(getUserResponseService)
 
 	httpHandler := handler.NewHttpHandler(userService, getAccountResponseService, transferService, depositService, authService)
 

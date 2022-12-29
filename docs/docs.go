@@ -9,7 +9,7 @@ const docTemplate = `{
     "swagger": "2.0",
     "info": {
         "description": "{{escape .Description}}",
-        "title": "{{.Name}}",
+        "title": "{{.Title}}",
         "contact": {},
         "version": "{{.Version}}"
     },
@@ -18,7 +18,7 @@ const docTemplate = `{
     "paths": {
         "/account": {
             "post": {
-                "description": "Create a new bank account",
+                "description": "Create a new custom bank account with specific name",
                 "consumes": [
                     "application/json"
                 ],
@@ -29,15 +29,15 @@ const docTemplate = `{
                     "Bank Account"
                 ],
                 "summary": "Create a bank account",
-                "operationId": "creates bank account",
+                "operationId": "creates custom bank account",
                 "parameters": [
                     {
-                        "description": "account type",
+                        "description": "account name",
                         "name": "input",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.inputAccount"
+                            "$ref": "#/definitions/handler.createAccountRequestBody"
                         }
                     }
                 ],
@@ -46,87 +46,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {}
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {}
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {}
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete a bank account",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Bank Account"
-                ],
-                "summary": "Delete a bank account",
-                "operationId": "deletes bank account",
-                "parameters": [
-                    {
-                        "description": "account type",
-                        "name": "input",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/handler.inputAccount"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {}
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {}
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {}
-                    }
-                }
-            }
-        },
-        "/balance": {
-            "get": {
-                "description": "Get all bank accounts you have",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Balance"
-                ],
-                "summary": "Get balance",
-                "operationId": "gets user bank accounts",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/domain.Account"
-                            }
                         }
                     },
                     "400": {
@@ -137,8 +56,81 @@ const docTemplate = `{
                         "description": "Unauthorized",
                         "schema": {}
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a bank account with specific name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bank Account"
+                ],
+                "summary": "Delete a bank account",
+                "operationId": "deletes custom bank account",
+                "parameters": [
+                    {
+                        "description": "account name",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.deleteAccountRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/accounts": {
+            "get": {
+                "description": "Get all bank accounts you have",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bank Account"
+                ],
+                "summary": "Get all bank accounts",
+                "operationId": "gets all bank accounts",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/account.GetAccountResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {}
                     },
                     "500": {
@@ -150,31 +142,24 @@ const docTemplate = `{
         },
         "/deposits": {
             "get": {
-                "description": "Get the deposits made to your bank account(s) using personal or client transfers",
+                "description": "Get all deposits other clients have made to your accounts",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Deposit"
                 ],
-                "summary": "Get deposits",
-                "operationId": "gets all deposits",
+                "summary": "Get all deposits",
+                "operationId": "Gets deposits",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/domain.Deposit"
-                            }
+                            "type": "string"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
-                        "schema": {}
-                    },
-                    "404": {
-                        "description": "Not Found",
                         "schema": {}
                     },
                     "500": {
@@ -196,16 +181,16 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "SignIn",
-                "operationId": "auth user",
+                "summary": "Login",
+                "operationId": "logins into account",
                 "parameters": [
                     {
-                        "description": "user info",
+                        "description": "user data",
                         "name": "input",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/domain.User"
+                            "$ref": "#/definitions/handler.userLoginRequestBody"
                         }
                     }
                 ],
@@ -220,8 +205,8 @@ const docTemplate = `{
                         "description": "Bad Request",
                         "schema": {}
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {}
                     },
                     "500": {
@@ -258,9 +243,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/signup": {
+        "/register": {
             "post": {
-                "description": "Create a new user",
+                "description": "Register new user",
                 "consumes": [
                     "application/json"
                 ],
@@ -270,16 +255,16 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "SignUp",
-                "operationId": "creates new user",
+                "summary": "Register",
+                "operationId": "Registers new user",
                 "parameters": [
                     {
-                        "description": "user info",
+                        "description": "user data",
                         "name": "input",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/domain.User"
+                            "$ref": "#/definitions/handler.createUserRequestBody"
                         }
                     }
                 ],
@@ -292,10 +277,6 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
-                        "schema": {}
-                    },
-                    "404": {
-                        "description": "Not Found",
                         "schema": {}
                     },
                     "500": {
@@ -307,7 +288,7 @@ const docTemplate = `{
         },
         "/transfer": {
             "post": {
-                "description": "Make a transfer to own account with the transfer type \"personal\"\nor to another client account with the transfer type \"client\"",
+                "description": "Make a transfer between your/other clients accounts",
                 "consumes": [
                     "application/json"
                 ],
@@ -318,15 +299,15 @@ const docTemplate = `{
                     "Transfer"
                 ],
                 "summary": "Make a transfer",
-                "operationId": "makes transfer of client or personal type",
+                "operationId": "Makes a transfer",
                 "parameters": [
                     {
-                        "description": "transfer info",
+                        "description": "transfer data",
                         "name": "input",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.inputTransfer"
+                            "$ref": "#/definitions/handler.makeTransferRequestBody"
                         }
                     }
                 ],
@@ -345,10 +326,6 @@ const docTemplate = `{
                         "description": "Unauthorized",
                         "schema": {}
                     },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {}
-                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {}
@@ -358,31 +335,24 @@ const docTemplate = `{
         },
         "/transfers": {
             "get": {
-                "description": "Get all client/personal transfers you have made",
+                "description": "Get all transfers you have made",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Transfer"
                 ],
-                "summary": "Get Transfers",
-                "operationId": "gets all transfers",
+                "summary": "Get all transfers",
+                "operationId": "Gets transfers",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/domain.Transfer"
-                            }
+                            "type": "string"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
-                        "schema": {}
-                    },
-                    "404": {
-                        "description": "Not Found",
                         "schema": {}
                     },
                     "500": {
@@ -394,7 +364,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "domain.Account": {
+        "account.GetAccountResponse": {
             "type": "object",
             "properties": {
                 "balance": {
@@ -403,53 +373,28 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "name": {
+                    "type": "string"
+                },
                 "type": {
                     "type": "string"
                 }
             }
         },
-        "domain.Deposit": {
+        "handler.createAccountRequestBody": {
             "type": "object",
             "properties": {
-                "amount": {
-                    "type": "integer"
-                },
-                "payee_account_id": {
-                    "type": "integer"
-                },
-                "sender_account_id": {
-                    "type": "integer"
-                },
-                "sender_username": {
-                    "type": "string"
-                },
-                "transfer_type": {
+                "name": {
                     "type": "string"
                 }
             }
         },
-        "domain.Transfer": {
+        "handler.createUserRequestBody": {
             "type": "object",
-            "properties": {
-                "amount": {
-                    "type": "integer"
-                },
-                "payee_account_id": {
-                    "type": "integer"
-                },
-                "payee_username": {
-                    "type": "string"
-                },
-                "sender_account_id": {
-                    "type": "integer"
-                },
-                "transfer_type": {
-                    "type": "string"
-                }
-            }
-        },
-        "domain.User": {
-            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
             "properties": {
                 "password": {
                     "type": "string"
@@ -459,15 +404,15 @@ const docTemplate = `{
                 }
             }
         },
-        "handler.inputAccount": {
+        "handler.deleteAccountRequestBody": {
             "type": "object",
             "properties": {
-                "type": {
+                "name": {
                     "type": "string"
                 }
             }
         },
-        "handler.inputTransfer": {
+        "handler.makeTransferRequestBody": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -478,8 +423,16 @@ const docTemplate = `{
                 },
                 "sender_account_id": {
                     "type": "integer"
+                }
+            }
+        },
+        "handler.userLoginRequestBody": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
                 },
-                "transfer_type": {
+                "username": {
                     "type": "string"
                 }
             }
@@ -491,9 +444,9 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/",
+	BasePath:         "/api",
 	Schemes:          []string{},
-	Title:            "Banking App",
+	Title:            "Mock Banking Application API",
 	Description:      "API Server for Mock Banking Application",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

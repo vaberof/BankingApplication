@@ -1,15 +1,37 @@
-basePath: /
+basePath: /api
 definitions:
-  domain.Account:
+  account.GetAccountResponse:
     properties:
       balance:
         type: integer
       id:
         type: integer
+      name:
+        type: string
       type:
         type: string
     type: object
-  domain.Deposit:
+  handler.createAccountRequestBody:
+    properties:
+      name:
+        type: string
+    type: object
+  handler.createUserRequestBody:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  handler.deleteAccountRequestBody:
+    properties:
+      name:
+        type: string
+    type: object
+  handler.makeTransferRequestBody:
     properties:
       amount:
         type: integer
@@ -17,67 +39,34 @@ definitions:
         type: integer
       sender_account_id:
         type: integer
-      sender_username:
-        type: string
-      transfer_type:
-        type: string
     type: object
-  domain.Transfer:
-    properties:
-      amount:
-        type: integer
-      payee_account_id:
-        type: integer
-      payee_username:
-        type: string
-      sender_account_id:
-        type: integer
-      transfer_type:
-        type: string
-    type: object
-  domain.User:
+  handler.userLoginRequestBody:
     properties:
       password:
         type: string
       username:
         type: string
     type: object
-  handler.inputAccount:
-    properties:
-      type:
-        type: string
-    type: object
-  handler.inputTransfer:
-    properties:
-      amount:
-        type: integer
-      payee_account_id:
-        type: integer
-      sender_account_id:
-        type: integer
-      transfer_type:
-        type: string
-    type: object
 host: localhost:8080
 info:
   contact: {}
   description: API Server for Mock Banking Application
-  title: Banking App
+  title: Mock Banking Application API
   version: "1.0"
 paths:
   /account:
     delete:
       consumes:
       - application/json
-      description: Delete a bank account
-      operationId: deletes bank account
+      description: Delete a bank account with specific name
+      operationId: deletes custom bank account
       parameters:
-      - description: account type
+      - description: account name
         in: body
         name: input
         required: true
         schema:
-          $ref: '#/definitions/handler.inputAccount'
+          $ref: '#/definitions/handler.deleteAccountRequestBody'
       produces:
       - application/json
       responses:
@@ -88,8 +77,8 @@ paths:
         "400":
           description: Bad Request
           schema: {}
-        "404":
-          description: Not Found
+        "401":
+          description: Unauthorized
           schema: {}
         "500":
           description: Internal Server Error
@@ -100,15 +89,15 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new bank account
-      operationId: creates bank account
+      description: Create a new custom bank account with specific name
+      operationId: creates custom bank account
       parameters:
-      - description: account type
+      - description: account name
         in: body
         name: input
         required: true
         schema:
-          $ref: '#/definitions/handler.inputAccount'
+          $ref: '#/definitions/handler.createAccountRequestBody'
       produces:
       - application/json
       responses:
@@ -119,8 +108,8 @@ paths:
         "400":
           description: Bad Request
           schema: {}
-        "404":
-          description: Not Found
+        "401":
+          description: Unauthorized
           schema: {}
         "500":
           description: Internal Server Error
@@ -128,10 +117,10 @@ paths:
       summary: Create a bank account
       tags:
       - Bank Account
-  /balance:
+  /accounts:
     get:
       description: Get all bank accounts you have
-      operationId: gets user bank accounts
+      operationId: gets all bank accounts
       produces:
       - application/json
       responses:
@@ -139,47 +128,35 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/domain.Account'
+              $ref: '#/definitions/account.GetAccountResponse'
             type: array
-        "400":
-          description: Bad Request
-          schema: {}
         "401":
           description: Unauthorized
-          schema: {}
-        "404":
-          description: Not Found
           schema: {}
         "500":
           description: Internal Server Error
           schema: {}
-      summary: Get balance
+      summary: Get all bank accounts
       tags:
-      - Balance
+      - Bank Account
   /deposits:
     get:
-      description: Get the deposits made to your bank account(s) using personal or
-        client transfers
-      operationId: gets all deposits
+      description: Get all deposits other clients have made to your accounts
+      operationId: Gets deposits
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/domain.Deposit'
-            type: array
+            type: string
         "401":
           description: Unauthorized
-          schema: {}
-        "404":
-          description: Not Found
           schema: {}
         "500":
           description: Internal Server Error
           schema: {}
-      summary: Get deposits
+      summary: Get all deposits
       tags:
       - Deposit
   /login:
@@ -187,14 +164,14 @@ paths:
       consumes:
       - application/json
       description: Login into account
-      operationId: auth user
+      operationId: logins into account
       parameters:
-      - description: user info
+      - description: user data
         in: body
         name: input
         required: true
         schema:
-          $ref: '#/definitions/domain.User'
+          $ref: '#/definitions/handler.userLoginRequestBody'
       produces:
       - application/json
       responses:
@@ -205,13 +182,13 @@ paths:
         "400":
           description: Bad Request
           schema: {}
-        "404":
-          description: Not Found
+        "401":
+          description: Unauthorized
           schema: {}
         "500":
           description: Internal Server Error
           schema: {}
-      summary: SignIn
+      summary: Login
       tags:
       - Auth
   /logout:
@@ -232,19 +209,19 @@ paths:
       summary: Logout
       tags:
       - Auth
-  /signup:
+  /register:
     post:
       consumes:
       - application/json
-      description: Create a new user
-      operationId: creates new user
+      description: Register new user
+      operationId: Registers new user
       parameters:
-      - description: user info
+      - description: user data
         in: body
         name: input
         required: true
         schema:
-          $ref: '#/definitions/domain.User'
+          $ref: '#/definitions/handler.createUserRequestBody'
       produces:
       - application/json
       responses:
@@ -255,30 +232,25 @@ paths:
         "400":
           description: Bad Request
           schema: {}
-        "404":
-          description: Not Found
-          schema: {}
         "500":
           description: Internal Server Error
           schema: {}
-      summary: SignUp
+      summary: Register
       tags:
       - Auth
   /transfer:
     post:
       consumes:
       - application/json
-      description: |-
-        Make a transfer to own account with the transfer type "personal"
-        or to another client account with the transfer type "client"
-      operationId: makes transfer of client or personal type
+      description: Make a transfer between your/other clients accounts
+      operationId: Makes a transfer
       parameters:
-      - description: transfer info
+      - description: transfer data
         in: body
         name: input
         required: true
         schema:
-          $ref: '#/definitions/handler.inputTransfer'
+          $ref: '#/definitions/handler.makeTransferRequestBody'
       produces:
       - application/json
       responses:
@@ -291,9 +263,6 @@ paths:
           schema: {}
         "401":
           description: Unauthorized
-          schema: {}
-        "404":
-          description: Not Found
           schema: {}
         "500":
           description: Internal Server Error
@@ -303,27 +272,22 @@ paths:
       - Transfer
   /transfers:
     get:
-      description: Get all client/personal transfers you have made
-      operationId: gets all transfers
+      description: Get all transfers you have made
+      operationId: Gets transfers
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/domain.Transfer'
-            type: array
+            type: string
         "401":
           description: Unauthorized
-          schema: {}
-        "404":
-          description: Not Found
           schema: {}
         "500":
           description: Internal Server Error
           schema: {}
-      summary: Get Transfers
+      summary: Get all transfers
       tags:
       - Transfer
 swagger: "2.0"
