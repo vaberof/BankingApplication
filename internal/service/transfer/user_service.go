@@ -1,7 +1,7 @@
-package handler
+package transfer
 
 import "github.com/vaberof/MockBankingApplication/internal/domain/user"
 
 type UserService interface {
-	CreateUser(username string, password string) (*user.User, error)
+	GetUserById(userId uint) (*user.User, error)
 }

@@ -9,7 +9,7 @@ type TransferStorage interface {
 		payeeUsername string,
 		payeeAccountId uint,
 		amount uint,
-		transferType string) error
+		transferType string) (*Transfer, error)
 
 	GetTransfers(userId uint) ([]*Transfer, error)
 }

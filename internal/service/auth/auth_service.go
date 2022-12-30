@@ -5,23 +5,22 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
 	domain "github.com/vaberof/MockBankingApplication/internal/domain/user"
-	getuser "github.com/vaberof/MockBankingApplication/internal/service/user"
 	"os"
 	"strconv"
 	"time"
 )
 
 type AuthService struct {
-	getUserService GetUserService
+	userService UserService
 }
 
-func NewAuthService(getUserService GetUserService) *AuthService {
+func NewAuthService(getUserService UserService) *AuthService {
 	return &AuthService{
-		getUserService: getUserService,
+		userService: getUserService,
 	}
 }
 
-func (s *AuthService) AuthenticateUser(jwtToken string) (*getuser.GetUserResponse, error) {
+func (s *AuthService) AuthenticateUser(jwtToken string) (*domain.User, error) {
 	token, err := s.parseJwtToken(jwtToken)
 	if err != nil {
 		return nil, err
@@ -33,12 +32,12 @@ func (s *AuthService) AuthenticateUser(jwtToken string) (*getuser.GetUserRespons
 		return nil, err
 	}
 
-	getUser, err := s.getUserService.GetUserById(uint(userId))
+	user, err := s.userService.GetUserById(uint(userId))
 	if err != nil {
 		return nil, err
 	}
 
-	return getUser, nil
+	return user, nil
 }
 
 func (s *AuthService) GenerateJwtToken(username string, password string) (string, error) {
@@ -90,7 +89,7 @@ func (s *AuthService) parseJwtToken(cookie string) (*jwt.Token, error) {
 }
 
 func (s *AuthService) generateJwtClaims(username string, password string) (*jwt.Token, error) {
-	user, err := s.getUserService.GetUser(username, password)
+	user, err := s.userService.GetUser(username, password)
 	if err != nil {
 		return nil, errors.New("incorrect username or/and password")
 	}

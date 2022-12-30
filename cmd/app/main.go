@@ -12,11 +12,9 @@ import (
 	"github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres/depositpg"
 	"github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres/transferpg"
 	"github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres/userpg"
-	getaccount "github.com/vaberof/MockBankingApplication/internal/service/account"
 	"github.com/vaberof/MockBankingApplication/internal/service/auth"
 	"github.com/vaberof/MockBankingApplication/internal/service/deposit"
 	"github.com/vaberof/MockBankingApplication/internal/service/transfer"
-	getuser "github.com/vaberof/MockBankingApplication/internal/service/user"
 	"log"
 	"os"
 	"time"
@@ -67,14 +65,11 @@ func main() {
 	accountService := account.NewAccountService(accountStoragePostgres)
 	depositService := deposit.NewDepositService(depositStoragePostgres)
 
-	getUserResponseService := getuser.NewGetUserResponseService(userService)
-	getAccountResponseService := getaccount.NewGetAccountResponseService(accountService)
+	transferService := transfer.NewTransferService(transferStoragePostgres, depositService, accountStoragePostgres, userService)
 
-	transferService := transfer.NewTransferService(transferStoragePostgres, depositService, accountStoragePostgres, getUserResponseService)
+	authService := auth.NewAuthService(userService)
 
-	authService := auth.NewAuthService(getUserResponseService)
-
-	httpHandler := handler.NewHttpHandler(userService, getAccountResponseService, transferService, depositService, authService)
+	httpHandler := handler.NewHttpHandler(userService, accountService, transferService, depositService, authService)
 
 	app := httpHandler.InitRoutes(&fiber.Config{
 		WriteTimeout: time.Duration(viper.GetInt("server.write_timeout")) * time.Second,

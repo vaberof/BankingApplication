@@ -1,52 +1,44 @@
 package handler
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+	"github.com/vaberof/MockBankingApplication/internal/app/http/views"
+)
 
 type deleteAccountRequestBody struct {
 	Name string `json:"name"`
 }
 
-//	@Summary		Delete a bank account
-//	@Tags			Bank Account
-//	@Description	Delete a bank account with specific name
-//	@ID				deletes custom bank account
-//	@Accept			json
-//	@Produce		json
-//	@Param			input	body		deleteAccountRequestBody	true	"account name"
-//	@Success		200		{string}	error
-//	@Failure		400		{object}	error
-//	@Failure		401		{object}	error
-//	@Failure		500		{object}	error
-//	@Router			/account [delete]
+// @Summary		Delete a bank account
+// @Tags			Bank Account
+// @Description	Delete a bank account with specific name
+// @ID				deletes custom bank account
+// @Accept			json
+// @Produce		json
+// @Param			input	body		deleteAccountRequestBody	true	"account name"
+// @Success		200		{string}	error
+// @Failure		400		{object}	error
+// @Failure		401		{object}	error
+// @Failure		500		{object}	error
+// @Router			/account [delete]
 func (h *HttpHandler) deleteAccount(c *fiber.Ctx) error {
 	user, err := h.authService.AuthenticateUser(c.Cookies("jwt"))
 	if err != nil {
-		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{
-			"error": "unauthorized",
-		})
+		return views.RenderErrorResponse(c, fiber.StatusUnauthorized, "unauthorized")
 	}
 
 	var deleteAccountReqBody deleteAccountRequestBody
 
 	err = c.BodyParser(&deleteAccountReqBody)
 	if err != nil {
-		c.Status(fiber.StatusBadRequest)
-		return c.JSON(fiber.Map{
-			"error": "invalid request body",
-		})
+		return views.RenderErrorResponse(c, fiber.StatusBadRequest, "invalid request body")
 	}
 
 	err = h.accountService.DeleteAccount(user.Id, deleteAccountReqBody.Name)
 	if err != nil {
-		c.Status(fiber.StatusInternalServerError)
-		return c.JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		return views.RenderErrorResponse(c, fiber.StatusInternalServerError, err.Error())
 	}
 
-	c.Status(fiber.StatusOK)
-	return c.JSON(fiber.Map{
-		"message": "account successfully deleted",
-	})
+	return views.RenderResponse(c, views.ResponseMessage{
+		"message": "account successfully deleted"})
 }

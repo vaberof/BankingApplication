@@ -57,7 +57,7 @@ const docTemplate = `{
                         "schema": {}
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal Server ErrorMessage",
                         "schema": {}
                     }
                 }
@@ -102,7 +102,7 @@ const docTemplate = `{
                         "schema": {}
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal Server ErrorMessage",
                         "schema": {}
                     }
                 }
@@ -134,7 +134,7 @@ const docTemplate = `{
                         "schema": {}
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal Server ErrorMessage",
                         "schema": {}
                     }
                 }
@@ -155,7 +155,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handler.GetDepositResponse"
+                            }
                         }
                     },
                     "401": {
@@ -163,7 +166,7 @@ const docTemplate = `{
                         "schema": {}
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal Server ErrorMessage",
                         "schema": {}
                     }
                 }
@@ -210,7 +213,7 @@ const docTemplate = `{
                         "schema": {}
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal Server ErrorMessage",
                         "schema": {}
                     }
                 }
@@ -280,7 +283,7 @@ const docTemplate = `{
                         "schema": {}
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal Server ErrorMessage",
                         "schema": {}
                     }
                 }
@@ -327,7 +330,7 @@ const docTemplate = `{
                         "schema": {}
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal Server ErrorMessage",
                         "schema": {}
                     }
                 }
@@ -356,7 +359,7 @@ const docTemplate = `{
                         "schema": {}
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal Server ErrorMessage",
                         "schema": {}
                     }
                 }
@@ -377,6 +380,26 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.GetDepositResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "payee_account_id": {
+                    "type": "integer"
+                },
+                "sender_account_id": {
+                    "type": "integer"
+                },
+                "sender_username": {
                     "type": "string"
                 }
             }

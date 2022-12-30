@@ -28,7 +28,7 @@ func (s *PostgresTransferStorage) SaveTransfer(
 	payeeUsername string,
 	payeeAccountId uint,
 	amount uint,
-	transferType string) error {
+	transferType string) (*transfer.Transfer, error) {
 
 	return s.saveTransferImpl(senderId, senderUsername, senderAccountId, payeeId, payeeUsername, payeeAccountId, amount, transferType)
 }
@@ -45,24 +45,32 @@ func (s *PostgresTransferStorage) saveTransferImpl(
 	payeeUsername string,
 	payeeAccountId uint,
 	amount uint,
-	transferType string) error {
+	transferType string) (*transfer.Transfer, error) {
 
 	senderAccount, payeeAccount, err := s.preprocessTransfer(senderAccountId, payeeAccountId, amount)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = s.processTransfer(senderAccount, payeeAccount, amount)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	err = s.createTransfer(senderId, senderUsername, senderAccountId, payeeId, payeeUsername, payeeAccountId, amount, transferType)
+	serviceTransfer, err := s.createTransfer(
+		senderId,
+		senderUsername,
+		senderAccountId,
+		payeeId,
+		payeeUsername,
+		payeeAccountId,
+		amount,
+		transferType)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return serviceTransfer, nil
 }
 
 func (s *PostgresTransferStorage) preprocessTransfer(
@@ -112,30 +120,31 @@ func (s *PostgresTransferStorage) createTransfer(
 	payeeUsername string,
 	payeeAccountId uint,
 	amount uint,
-	transferType string) error {
+	transferType string) (*transfer.Transfer, error) {
 
-	var transfer Transfer
+	var infraTransfer Transfer
 
-	transfer.SenderId = senderId
-	transfer.SenderUsername = senderUsername
-	transfer.SenderAccountId = senderAccountId
-	transfer.PayeeId = payeeId
-	transfer.PayeeUsername = payeeUsername
-	transfer.PayeeAccountId = payeeAccountId
-	transfer.Amount = amount
-	transfer.TransferType = transferType
+	infraTransfer.SenderId = senderId
+	infraTransfer.SenderUsername = senderUsername
+	infraTransfer.SenderAccountId = senderAccountId
+	infraTransfer.PayeeId = payeeId
+	infraTransfer.PayeeUsername = payeeUsername
+	infraTransfer.PayeeAccountId = payeeAccountId
+	infraTransfer.Amount = amount
+	infraTransfer.TransferType = transferType
 
-	err := s.db.Create(&transfer).Error
+	err := s.db.Create(&infraTransfer).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"layer": "infra",
 			"func":  "createTransfer",
 		}).Error(err)
 
-		return err
+		return nil, err
 	}
 
-	return nil
+	serviceTransfer := s.infraTransferToService(&infraTransfer)
+	return serviceTransfer, nil
 }
 
 func (s *PostgresTransferStorage) getTransfersImpl(userId uint) ([]*transfer.Transfer, error) {

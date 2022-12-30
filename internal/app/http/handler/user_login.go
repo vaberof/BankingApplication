@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"log"
+	"github.com/vaberof/MockBankingApplication/internal/app/http/views"
 )
 
 type userLoginRequestBody struct {
@@ -27,27 +27,16 @@ func (h *HttpHandler) login(c *fiber.Ctx) error {
 
 	err := c.BodyParser(&userLoginReqBody)
 	if err != nil {
-		c.Status(fiber.StatusBadRequest)
-		return c.JSON(fiber.Map{
-			"error": "invalid request body",
-		})
+		return views.RenderErrorResponse(c, fiber.StatusBadRequest, "invalid request body")
 	}
 
 	token, err := h.authService.GenerateJwtToken(userLoginReqBody.Username, userLoginReqBody.Password)
 	if err != nil {
-		c.Status(fiber.StatusBadRequest)
-		return c.JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		return views.RenderErrorResponse(c, fiber.StatusInternalServerError, err.Error())
 	}
 
 	cookie := h.authService.GenerateCookie(token)
 	c.Cookie(cookie)
 
-	log.Printf("TOKEN: %s, COOKIE: %v, error in USER LOGIN: %v", token, c.Cookies("jwt"), err)
-
-	c.Status(fiber.StatusOK)
-	return c.JSON(fiber.Map{
-		"token": token,
-	})
+	return views.RenderResponse(c, token)
 }

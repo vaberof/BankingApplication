@@ -16,7 +16,7 @@ func NewPostgresUserStorage(db *gorm.DB) *PostgresUserStorage {
 	}
 }
 
-func (s *PostgresUserStorage) CreateUser(username string, password string) (uint, error) {
+func (s *PostgresUserStorage) CreateUser(username string, password string) (*domain.User, error) {
 	return s.createUserImpl(username, password)
 }
 
@@ -28,23 +28,24 @@ func (s *PostgresUserStorage) GetUserByUsername(username string) (*domain.User, 
 	return s.getUserByUsernameImpl(username)
 }
 
-func (s *PostgresUserStorage) createUserImpl(username string, password string) (uint, error) {
-	var user User
+func (s *PostgresUserStorage) createUserImpl(username string, password string) (*domain.User, error) {
+	var infraUser User
 
-	user.Username = username
-	user.Password = password
+	infraUser.Username = username
+	infraUser.Password = password
 
-	err := s.db.Create(&user).Error
+	err := s.db.Create(&infraUser).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"layer": "infra",
 			"func":  "createUserImpl",
 		}).Error(err)
 
-		return 0, err
+		return nil, err
 	}
 
-	return user.Id, nil
+	domainUser := s.infraUserToDomain(&infraUser)
+	return domainUser, nil
 }
 
 func (s *PostgresUserStorage) getUserByIdImpl(userId uint) (*domain.User, error) {

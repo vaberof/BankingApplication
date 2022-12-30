@@ -2,7 +2,6 @@ package deposit
 
 import (
 	"errors"
-	"github.com/vaberof/MockBankingApplication/internal/app/http/handler"
 )
 
 type DepositService struct {
@@ -15,7 +14,7 @@ func NewDepositService(depositStorage DepositStorage) *DepositService {
 	}
 }
 
-func (d *DepositService) SaveDeposit(
+func (s *DepositService) SaveDeposit(
 	senderId uint,
 	senderUsername string,
 	senderAccountId uint,
@@ -24,24 +23,22 @@ func (d *DepositService) SaveDeposit(
 	payeeAccountId uint,
 	amount uint) error {
 
-	return d.depositStorage.SaveDeposit(senderId, senderUsername, senderAccountId, payeeId, payeeUsername, payeeAccountId, amount)
+	return s.depositStorage.SaveDeposit(senderId, senderUsername, senderAccountId, payeeId, payeeUsername, payeeAccountId, amount)
 }
 
-func (d *DepositService) GetDeposits(userId uint) ([]*handler.GetDepositResponse, error) {
-	return d.getDepositsImpl(userId)
+func (s *DepositService) GetDeposits(userId uint) ([]*Deposit, error) {
+	return s.getDepositsImpl(userId)
 }
 
-func (d *DepositService) getDepositsImpl(userId uint) ([]*handler.GetDepositResponse, error) {
-	serviceDeposits, err := d.depositStorage.GetDeposits(userId)
+func (s *DepositService) getDepositsImpl(userId uint) ([]*Deposit, error) {
+	deposits, err := s.depositStorage.GetDeposits(userId)
 	if err != nil {
 		return nil, errors.New("cannot get deposits")
 	}
 
-	if len(serviceDeposits) == 0 {
+	if len(deposits) == 0 {
 		return nil, errors.New("there are no deposits")
 	}
 
-	handlerDeposits := d.serviceDepositsToGetDepositRes(serviceDeposits)
-
-	return handlerDeposits, nil
+	return deposits, nil
 }

@@ -14,8 +14,12 @@ func NewUserService(userStorage UserStorage, accountStorage AccountStorage) *Use
 	return &UserService{userStorage: userStorage, accountStorage: accountStorage}
 }
 
-func (s *UserService) CreateUser(username string, password string) (uint, error) {
+func (s *UserService) CreateUser(username string, password string) (*User, error) {
 	return s.createUserImpl(username, password)
+}
+
+func (s *UserService) GetUser(username string, password string) (*User, error) {
+	return s.getUserImpl(username, password)
 }
 
 func (s *UserService) GetUserById(userId uint) (*User, error) {
@@ -26,28 +30,42 @@ func (s *UserService) GetUserByUsername(username string) (*User, error) {
 	return s.getUserByUsernameImpl(username)
 }
 
-func (s *UserService) createUserImpl(username string, password string) (uint, error) {
-	_, err := s.GetUserByUsername(username)
+func (s *UserService) createUserImpl(username string, password string) (*User, error) {
+	_, err := s.userStorage.GetUserByUsername(username)
 	if err == nil {
-		return 0, errors.New("user with this username already exist")
+		return nil, errors.New("user with this username already exist")
 	}
 
 	hashedPassword, err := s.hashPassword(password)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	userId, err := s.userStorage.CreateUser(username, hashedPassword)
+	user, err := s.userStorage.CreateUser(username, hashedPassword)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	err = s.accountStorage.CreateInitialAccount(userId)
+	err = s.accountStorage.CreateInitialAccount(user.Id)
 	if err != nil {
-		return 0, errors.New("cannot create initial account")
+		return nil, errors.New("cannot create initial account")
 	}
 
-	return userId, nil
+	return user, nil
+}
+
+func (s *UserService) getUserImpl(username string, password string) (*User, error) {
+	user, err := s.userStorage.GetUserByUsername(username)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.validatePassword(user.Password, password)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 
 func (s *UserService) getUserByIdImpl(userId uint) (*User, error) {
@@ -75,4 +93,11 @@ func (s *UserService) hashPassword(password string) (string, error) {
 	}
 
 	return string(hashedPassword), nil
+}
+
+func (s *UserService) validatePassword(hashedPassword string, inputPassword string) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(inputPassword)); err != nil {
+		return err
+	}
+	return nil
 }

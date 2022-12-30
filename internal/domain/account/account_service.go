@@ -14,12 +14,12 @@ func (s *AccountService) CreateInitialAccount(userId uint) error {
 	return s.accountStorage.CreateInitialAccount(userId)
 }
 
-func (s *AccountService) CreateCustomAccount(userId uint, accountName string) error {
+func (s *AccountService) CreateCustomAccount(userId uint, accountName string) (*Account, error) {
 	return s.createCustomAccountImpl(userId, accountName)
 }
 
 func (s *AccountService) DeleteAccount(userId uint, accountName string) error {
-	return s.accountStorage.DeleteAccount(userId, accountName)
+	return s.deleteAccountImpl(userId, accountName)
 }
 
 func (s *AccountService) GetAccountByName(userId uint, accountName string) (*Account, error) {
@@ -34,18 +34,40 @@ func (s *AccountService) GetAccounts(userId uint) ([]*Account, error) {
 	return s.getAccountsImpl(userId)
 }
 
-func (s *AccountService) createCustomAccountImpl(userId uint, accountName string) error {
-	account, err := s.GetAccountByName(userId, accountName)
-	if account != nil || err == nil {
-		return errors.New("account with this name already exist")
+func (s *AccountService) createCustomAccountImpl(userId uint, accountName string) (*Account, error) {
+	_, err := s.GetAccountByName(userId, accountName)
+	if err == nil {
+		return nil, errors.New("account with this name already exist")
 	}
 
-	err = s.accountStorage.CreateCustomAccount(userId, accountName)
+	account, err := s.accountStorage.CreateCustomAccount(userId, accountName)
 	if err != nil {
-		return errors.New("cannot create account")
+		return nil, errors.New("cannot create account")
 	}
 
-	return err
+	return account, nil
+}
+
+func (s *AccountService) deleteAccountImpl(userId uint, accountName string) error {
+	account, err := s.accountStorage.GetAccountByName(userId, accountName)
+	if err != nil {
+		return err
+	}
+
+	if s.isMainAccountType(account.Type) {
+		return errors.New("cannot delete account with main type")
+	}
+
+	if !s.isZeroAccountBalance(account.Balance) {
+		return errors.New("cannot delete account with non-zero balance")
+	}
+
+	err = s.accountStorage.DeleteAccount(account)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *AccountService) getAccountByNameImpl(userId uint, accountName string) (*Account, error) {
@@ -73,4 +95,12 @@ func (s *AccountService) getAccountsImpl(userId uint) ([]*Account, error) {
 	}
 
 	return accounts, nil
+}
+
+func (s *AccountService) isZeroAccountBalance(balance int) bool {
+	return balance <= 0
+}
+
+func (s *AccountService) isMainAccountType(accountType string) bool {
+	return accountType == "Main"
 }

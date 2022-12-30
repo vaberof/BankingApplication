@@ -6,14 +6,14 @@ type TransferService struct {
 	transferStorage     TransferStorage
 	depositService      DepositService
 	accountStorage      AccountStorage
-	userResponseService UserResponseService
+	userResponseService UserService
 }
 
 func NewTransferService(
 	transferStorage TransferStorage,
 	depositService DepositService,
 	accountStorage AccountStorage,
-	userResponseService UserResponseService) *TransferService {
+	userResponseService UserService) *TransferService {
 
 	return &TransferService{
 		transferStorage:     transferStorage,
@@ -23,7 +23,7 @@ func NewTransferService(
 	}
 }
 
-func (s *TransferService) MakeTransfer(senderId uint, senderAccountId uint, payeeAccountId uint, amount uint) error {
+func (s *TransferService) MakeTransfer(senderId uint, senderAccountId uint, payeeAccountId uint, amount uint) (*Transfer, error) {
 	return s.makeTransferImpl(senderId, senderAccountId, payeeAccountId, amount)
 }
 
@@ -31,32 +31,36 @@ func (s *TransferService) GetTransfers(userId uint) ([]*Transfer, error) {
 	return s.getTransfersImpl(userId)
 }
 
-func (s *TransferService) makeTransferImpl(senderId uint, senderAccountId uint, payeeAccountId uint, amount uint) error {
+func (s *TransferService) makeTransferImpl(senderId uint, senderAccountId uint, payeeAccountId uint, amount uint) (*Transfer, error) {
+	if senderAccountId == payeeAccountId {
+		return nil, errors.New("cannot make a transfer to the same account")
+	}
+
 	payeeId, senderUsername, payeeUsername, err := s.preprocessTransfer(senderId, payeeAccountId)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	transferType, err := s.processTransfer(senderId, payeeId, amount)
+	transferType, err := s.processTransfer(senderId, payeeId, senderAccountId, payeeAccountId, amount)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	err = s.transferStorage.SaveTransfer(senderId, senderUsername, senderAccountId, payeeId, payeeUsername, payeeAccountId, amount, transferType)
+	transfer, err := s.transferStorage.SaveTransfer(senderId, senderUsername, senderAccountId, payeeId, payeeUsername, payeeAccountId, amount, transferType)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if senderId == payeeId {
-		return nil
+		return nil, nil
 	}
 
 	err = s.depositService.SaveDeposit(senderId, senderUsername, senderAccountId, payeeId, payeeUsername, payeeAccountId, amount)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return transfer, nil
 }
 
 func (s *TransferService) preprocessTransfer(senderId uint, payeeAccountId uint) (uint, string, string, error) {
@@ -82,7 +86,7 @@ func (s *TransferService) preprocessTransfer(senderId uint, payeeAccountId uint)
 	return payeeUser.Id, senderUser.Username, payeeUser.Username, nil
 }
 
-func (s *TransferService) processTransfer(senderId uint, payeeId uint, amount uint) (string, error) {
+func (s *TransferService) processTransfer(senderId uint, payeeId uint, senderAccountId uint, payeeAccountId uint, amount uint) (string, error) {
 	if !s.isAcceptableAmount(amount) {
 		return "", errors.New("amount must be greater than 0")
 	}

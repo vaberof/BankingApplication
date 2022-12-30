@@ -11,6 +11,19 @@ definitions:
       type:
         type: string
     type: object
+  handler.GetDepositResponse:
+    properties:
+      amount:
+        type: integer
+      date:
+        type: string
+      payee_account_id:
+        type: integer
+      sender_account_id:
+        type: integer
+      sender_username:
+        type: string
+    type: object
   handler.createAccountRequestBody:
     properties:
       name:
@@ -149,7 +162,9 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            items:
+              $ref: '#/definitions/handler.GetDepositResponse'
+            type: array
         "401":
           description: Unauthorized
           schema: {}

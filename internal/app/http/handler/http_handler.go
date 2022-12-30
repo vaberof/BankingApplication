@@ -59,6 +59,7 @@ func (h *HttpHandler) InitRoutes(config *fiber.Config) *fiber.App {
 
 func (h *HttpHandler) configureCors(app *fiber.App) {
 	corsConfig := cors.Config{
+		AllowOrigins:     "*",
 		AllowCredentials: true,
 	}
 

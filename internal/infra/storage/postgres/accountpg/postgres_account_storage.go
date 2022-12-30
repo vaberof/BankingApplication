@@ -8,11 +8,11 @@ import (
 )
 
 const (
-	initialAccountType    = "Main"
-	SecondaryAccountType  = "Secondary"
-	initialAccountName    = "General"
-	initialAccountBalance = 10000
-	DefaultAccountBalance = 0
+	initialAccountType      = "Main"
+	SecondaryAccountType    = "Secondary"
+	initialAccountName      = "General"
+	initialAccountBalance   = 10000
+	SecondaryAccountBalance = 0
 )
 
 type PostgresAccountStorage struct {
@@ -27,7 +27,7 @@ func (s *PostgresAccountStorage) CreateInitialAccount(userId uint) error {
 	return s.createInitialAccountImpl(userId)
 }
 
-func (s *PostgresAccountStorage) CreateCustomAccount(userId uint, accountName string) error {
+func (s *PostgresAccountStorage) CreateCustomAccount(userId uint, accountName string) (*account.Account, error) {
 	return s.createCustomAccountImpl(userId, accountName)
 }
 
@@ -43,12 +43,12 @@ func (s *PostgresAccountStorage) GetAccounts(userId uint) ([]*account.Account, e
 	return s.getAccountsImpl(userId)
 }
 
-func (s *PostgresAccountStorage) UpdateBalance(account *Account, balance int) error {
-	return s.updateBalanceImpl(account, balance)
+func (s *PostgresAccountStorage) UpdateBalance(infraAccount *Account, balance int) error {
+	return s.updateBalanceImpl(infraAccount, balance)
 }
 
-func (s *PostgresAccountStorage) DeleteAccount(userId uint, accountName string) error {
-	return s.deleteAccountImpl(userId, accountName)
+func (s *PostgresAccountStorage) DeleteAccount(domainAccount *account.Account) error {
+	return s.deleteAccountImpl(domainAccount)
 }
 
 func (s *PostgresAccountStorage) createInitialAccountImpl(userId uint) error {
@@ -72,25 +72,27 @@ func (s *PostgresAccountStorage) createInitialAccountImpl(userId uint) error {
 	return nil
 }
 
-func (s *PostgresAccountStorage) createCustomAccountImpl(userId uint, accountName string) error {
-	var account Account
+func (s *PostgresAccountStorage) createCustomAccountImpl(userId uint, accountName string) (*account.Account, error) {
+	var infraAccount Account
 
-	account.UserId = userId
-	account.Type = SecondaryAccountType
-	account.Name = accountName
-	account.Balance = DefaultAccountBalance
+	infraAccount.UserId = userId
+	infraAccount.Type = SecondaryAccountType
+	infraAccount.Name = accountName
+	infraAccount.Balance = SecondaryAccountBalance
 
-	err := s.db.Create(&account).Error
+	err := s.db.Create(&infraAccount).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"layer": "infra",
 			"func":  "createCustomAccountImpl",
 		}).Error(err)
 
-		return err
+		return nil, err
 	}
 
-	return nil
+	domainAccount := s.infraAccountToDomain(&infraAccount)
+
+	return domainAccount, nil
 }
 
 func (s *PostgresAccountStorage) getAccountByNameImpl(userId uint, accountName string) (*account.Account, error) {
@@ -148,6 +150,7 @@ func (s *PostgresAccountStorage) getAccountsImpl(userId uint) ([]*account.Accoun
 
 func (s *PostgresAccountStorage) updateBalanceImpl(account *Account, balance int) error {
 	account.Balance = balance
+
 	err := s.db.Save(&account).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
@@ -161,21 +164,10 @@ func (s *PostgresAccountStorage) updateBalanceImpl(account *Account, balance int
 	return nil
 }
 
-func (s *PostgresAccountStorage) deleteAccountImpl(userId uint, accountName string) error {
-	account, err := s.getAccountByNameImpl(userId, accountName)
-	if err != nil {
-		return err
-	}
+func (s *PostgresAccountStorage) deleteAccountImpl(domainAccount *account.Account) error {
+	infraAccount := s.DomainAccountToInfra(domainAccount)
 
-	if s.isMainAccountType(account.Type) {
-		return errors.New("cannot delete account with main type")
-	}
-
-	if !s.isZeroAccountBalance(account.Balance) {
-		return errors.New("cannot delete account with non-zero balance")
-	}
-
-	err = s.db.Delete(&account).Error
+	err := s.db.Delete(&infraAccount).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"layer": "infra",
