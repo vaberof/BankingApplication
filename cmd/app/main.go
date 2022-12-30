@@ -51,10 +51,10 @@ func main() {
 		log.Fatalf("cannot connect to database %s", err.Error())
 	}
 
-	err = db.AutoMigrate(&accountpg.Account{}, &userpg.User{}, &transferpg.Transfer{}, &depositpg.Deposit{})
-	if err != nil {
-		log.Fatalf("cannot auto migrate models %s", err.Error())
-	}
+	/*	err = db.AutoMigrate(&accountpg.PostgresAccount{}, &userpg.PostgresUser{}, &transferpg.PostgresTransfer{}, &depositpg.PostgresDeposit{})
+		if err != nil {
+			log.Fatalf("cannot auto migrate models %s", err.Error())
+		}*/
 
 	userStoragePostgres := userpg.NewPostgresUserStorage(db)
 	accountStoragePostgres := accountpg.NewPostgresAccountStorage(db)

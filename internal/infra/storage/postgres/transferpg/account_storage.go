@@ -7,6 +7,5 @@ import (
 
 type AccountStorage interface {
 	GetAccountById(accountId uint) (*account.Account, error)
-	UpdateBalance(account *accountpg.Account, balance int) error
-	DomainAccountToInfra(domainAccount *account.Account) *accountpg.Account
+	UpdateBalance(account *accountpg.PostgresAccount, balance int) error
 }

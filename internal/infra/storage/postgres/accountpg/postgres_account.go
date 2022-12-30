@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type Account struct {
+type PostgresAccount struct {
 	Id        uint
 	UserId    uint
 	Type      string

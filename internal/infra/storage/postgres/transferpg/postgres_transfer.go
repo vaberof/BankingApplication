@@ -2,7 +2,7 @@ package transferpg
 
 import "time"
 
-type Transfer struct {
+type PostgresTransfer struct {
 	Id              uint
 	SenderId        uint
 	SenderUsername  string

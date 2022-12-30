@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/sirupsen/logrus"
 	"github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres/accountpg"
-	"github.com/vaberof/MockBankingApplication/internal/service/transfer"
+	service "github.com/vaberof/MockBankingApplication/internal/service/transfer"
 	"gorm.io/gorm"
 )
 
@@ -28,12 +28,12 @@ func (s *PostgresTransferStorage) SaveTransfer(
 	payeeUsername string,
 	payeeAccountId uint,
 	amount uint,
-	transferType string) (*transfer.Transfer, error) {
+	transferType string) (*service.Transfer, error) {
 
 	return s.saveTransferImpl(senderId, senderUsername, senderAccountId, payeeId, payeeUsername, payeeAccountId, amount, transferType)
 }
 
-func (s *PostgresTransferStorage) GetTransfers(userId uint) ([]*transfer.Transfer, error) {
+func (s *PostgresTransferStorage) GetTransfers(userId uint) ([]*service.Transfer, error) {
 	return s.getTransfersImpl(userId)
 }
 
@@ -45,7 +45,7 @@ func (s *PostgresTransferStorage) saveTransferImpl(
 	payeeUsername string,
 	payeeAccountId uint,
 	amount uint,
-	transferType string) (*transfer.Transfer, error) {
+	transferType string) (*service.Transfer, error) {
 
 	senderAccount, payeeAccount, err := s.preprocessTransfer(senderAccountId, payeeAccountId, amount)
 	if err != nil {
@@ -76,7 +76,7 @@ func (s *PostgresTransferStorage) saveTransferImpl(
 func (s *PostgresTransferStorage) preprocessTransfer(
 	senderAccountId uint,
 	payeeAccountId uint,
-	amount uint) (*accountpg.Account, *accountpg.Account, error) {
+	amount uint) (*accountpg.PostgresAccount, *accountpg.PostgresAccount, error) {
 
 	senderAccount, err := s.accountStorage.GetAccountById(senderAccountId)
 	if err != nil {
@@ -92,13 +92,13 @@ func (s *PostgresTransferStorage) preprocessTransfer(
 		return nil, nil, err
 	}
 
-	senderInfraAccount := s.accountStorage.DomainAccountToInfra(senderAccount)
-	payeeAccountInfraAccount := s.accountStorage.DomainAccountToInfra(payeeAccount)
+	senderInfraAccount := accountpg.BuildPostgresAccount(senderAccount)
+	payeeAccountInfraAccount := accountpg.BuildPostgresAccount(payeeAccount)
 
 	return senderInfraAccount, payeeAccountInfraAccount, nil
 }
 
-func (s *PostgresTransferStorage) processTransfer(senderAccount *accountpg.Account, payeeAccount *accountpg.Account, amount uint) error {
+func (s *PostgresTransferStorage) processTransfer(senderAccount *accountpg.PostgresAccount, payeeAccount *accountpg.PostgresAccount, amount uint) error {
 	err := s.accountStorage.UpdateBalance(senderAccount, senderAccount.Balance-int(amount))
 	if err != nil {
 		return err
@@ -120,20 +120,20 @@ func (s *PostgresTransferStorage) createTransfer(
 	payeeUsername string,
 	payeeAccountId uint,
 	amount uint,
-	transferType string) (*transfer.Transfer, error) {
+	transferType string) (*service.Transfer, error) {
 
-	var infraTransfer Transfer
+	var postgresTransfer PostgresTransfer
 
-	infraTransfer.SenderId = senderId
-	infraTransfer.SenderUsername = senderUsername
-	infraTransfer.SenderAccountId = senderAccountId
-	infraTransfer.PayeeId = payeeId
-	infraTransfer.PayeeUsername = payeeUsername
-	infraTransfer.PayeeAccountId = payeeAccountId
-	infraTransfer.Amount = amount
-	infraTransfer.TransferType = transferType
+	postgresTransfer.SenderId = senderId
+	postgresTransfer.SenderUsername = senderUsername
+	postgresTransfer.SenderAccountId = senderAccountId
+	postgresTransfer.PayeeId = payeeId
+	postgresTransfer.PayeeUsername = payeeUsername
+	postgresTransfer.PayeeAccountId = payeeAccountId
+	postgresTransfer.Amount = amount
+	postgresTransfer.TransferType = transferType
 
-	err := s.db.Create(&infraTransfer).Error
+	err := s.db.Table("transfers").Create(&postgresTransfer).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"layer": "infra",
@@ -143,14 +143,14 @@ func (s *PostgresTransferStorage) createTransfer(
 		return nil, err
 	}
 
-	serviceTransfer := s.infraTransferToService(&infraTransfer)
+	serviceTransfer := BuildServiceTransfer(&postgresTransfer)
 	return serviceTransfer, nil
 }
 
-func (s *PostgresTransferStorage) getTransfersImpl(userId uint) ([]*transfer.Transfer, error) {
-	var infraTransfers []*Transfer
+func (s *PostgresTransferStorage) getTransfersImpl(userId uint) ([]*service.Transfer, error) {
+	var postgresTransfers []*PostgresTransfer
 
-	err := s.db.Table("transfers").Where("sender_id = ?", userId).Find(&infraTransfers).Error
+	err := s.db.Table("transfers").Where("sender_id = ?", userId).Find(&postgresTransfers).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"layer": "infra",
@@ -160,7 +160,7 @@ func (s *PostgresTransferStorage) getTransfersImpl(userId uint) ([]*transfer.Tra
 		return nil, err
 	}
 
-	serviceTransfers := s.infraTransfersToService(infraTransfers)
+	serviceTransfers := BuildServiceTransfers(postgresTransfers)
 
 	return serviceTransfers, nil
 }

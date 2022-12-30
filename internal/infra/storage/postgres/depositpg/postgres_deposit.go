@@ -2,7 +2,7 @@ package depositpg
 
 import "time"
 
-type Deposit struct {
+type PostgresDeposit struct {
 	Id              uint
 	SenderId        uint
 	SenderUsername  string

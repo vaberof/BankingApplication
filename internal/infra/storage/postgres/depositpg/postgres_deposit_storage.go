@@ -41,7 +41,7 @@ func (s *PostgresDepositStorage) saveDepositImpl(
 	payeeAccountId uint,
 	amount uint) error {
 
-	var deposit Deposit
+	var deposit PostgresDeposit
 
 	deposit.SenderId = senderId
 	deposit.SenderUsername = senderUsername
@@ -50,7 +50,7 @@ func (s *PostgresDepositStorage) saveDepositImpl(
 	deposit.PayeeUsername = payeeUsername
 	deposit.PayeeAccountId = payeeAccountId
 	deposit.Amount = amount
-	err := s.db.Create(&deposit).Error
+	err := s.db.Table("deposits").Create(&deposit).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"layer": "infra",
@@ -64,9 +64,9 @@ func (s *PostgresDepositStorage) saveDepositImpl(
 }
 
 func (s *PostgresDepositStorage) getDepositsImpl(userId uint) ([]*deposit.Deposit, error) {
-	var infraDeposits []*Deposit
+	var postgresDeposits []*PostgresDeposit
 
-	err := s.db.Table("deposits").Where("payee_id = ?", userId).Find(&infraDeposits).Error
+	err := s.db.Table("deposits").Where("payee_id = ?", userId).Find(&postgresDeposits).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"layer": "infra",
@@ -76,7 +76,7 @@ func (s *PostgresDepositStorage) getDepositsImpl(userId uint) ([]*deposit.Deposi
 		return nil, err
 	}
 
-	serviceDeposits := s.infraDepositsToService(infraDeposits)
+	serviceDeposits := BuildServiceDeposits(postgresDeposits)
 
 	return serviceDeposits, nil
 }

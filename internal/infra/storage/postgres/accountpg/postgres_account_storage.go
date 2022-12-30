@@ -3,7 +3,7 @@ package accountpg
 import (
 	"errors"
 	"github.com/sirupsen/logrus"
-	"github.com/vaberof/MockBankingApplication/internal/domain/account"
+	domain "github.com/vaberof/MockBankingApplication/internal/domain/account"
 	"gorm.io/gorm"
 )
 
@@ -27,43 +27,44 @@ func (s *PostgresAccountStorage) CreateInitialAccount(userId uint) error {
 	return s.createInitialAccountImpl(userId)
 }
 
-func (s *PostgresAccountStorage) CreateCustomAccount(userId uint, accountName string) (*account.Account, error) {
+func (s *PostgresAccountStorage) CreateCustomAccount(userId uint, accountName string) (*domain.Account, error) {
 	return s.createCustomAccountImpl(userId, accountName)
 }
 
-func (s *PostgresAccountStorage) GetAccountByName(userId uint, accountName string) (*account.Account, error) {
+func (s *PostgresAccountStorage) GetAccountByName(userId uint, accountName string) (*domain.Account, error) {
 	return s.getAccountByNameImpl(userId, accountName)
 }
 
-func (s *PostgresAccountStorage) GetAccountById(accountId uint) (*account.Account, error) {
+func (s *PostgresAccountStorage) GetAccountById(accountId uint) (*domain.Account, error) {
 	return s.getAccountByIdImpl(accountId)
 }
 
-func (s *PostgresAccountStorage) GetAccounts(userId uint) ([]*account.Account, error) {
+func (s *PostgresAccountStorage) GetAccounts(userId uint) ([]*domain.Account, error) {
 	return s.getAccountsImpl(userId)
 }
 
-func (s *PostgresAccountStorage) UpdateBalance(infraAccount *Account, balance int) error {
-	return s.updateBalanceImpl(infraAccount, balance)
+func (s *PostgresAccountStorage) UpdateBalance(postgresAccount *PostgresAccount, balance int) error {
+	return s.updateBalanceImpl(postgresAccount, balance)
 }
 
-func (s *PostgresAccountStorage) DeleteAccount(domainAccount *account.Account) error {
+func (s *PostgresAccountStorage) DeleteAccount(domainAccount *domain.Account) error {
 	return s.deleteAccountImpl(domainAccount)
 }
 
 func (s *PostgresAccountStorage) createInitialAccountImpl(userId uint) error {
-	var account Account
+	var postgresAccount PostgresAccount
 
-	account.UserId = userId
-	account.Type = initialAccountType
-	account.Name = initialAccountName
-	account.Balance = initialAccountBalance
+	postgresAccount.UserId = userId
+	postgresAccount.Type = initialAccountType
+	postgresAccount.Name = initialAccountName
+	postgresAccount.Balance = initialAccountBalance
 
-	err := s.db.Create(&account).Error
+	err := s.db.Table("accounts").Create(&postgresAccount).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"layer": "infra",
-			"func":  "createInitialAccountImpl",
+			"layer":   "infra",
+			"package": "accountpg",
+			"func":    "createInitialAccountImpl",
 		}).Error(err)
 
 		return err
@@ -72,90 +73,95 @@ func (s *PostgresAccountStorage) createInitialAccountImpl(userId uint) error {
 	return nil
 }
 
-func (s *PostgresAccountStorage) createCustomAccountImpl(userId uint, accountName string) (*account.Account, error) {
-	var infraAccount Account
+func (s *PostgresAccountStorage) createCustomAccountImpl(userId uint, accountName string) (*domain.Account, error) {
+	var postgresAccount PostgresAccount
 
-	infraAccount.UserId = userId
-	infraAccount.Type = SecondaryAccountType
-	infraAccount.Name = accountName
-	infraAccount.Balance = SecondaryAccountBalance
+	postgresAccount.UserId = userId
+	postgresAccount.Type = SecondaryAccountType
+	postgresAccount.Name = accountName
+	postgresAccount.Balance = SecondaryAccountBalance
 
-	err := s.db.Create(&infraAccount).Error
+	err := s.db.Table("accounts").Create(&postgresAccount).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"layer": "infra",
-			"func":  "createCustomAccountImpl",
+			"layer":   "infra",
+			"package": "accountpg",
+			"func":    "createCustomAccountImpl",
 		}).Error(err)
 
 		return nil, err
 	}
 
-	domainAccount := s.infraAccountToDomain(&infraAccount)
+	domainAccount := BuildDomainAccount(&postgresAccount)
 
 	return domainAccount, nil
 }
 
-func (s *PostgresAccountStorage) getAccountByNameImpl(userId uint, accountName string) (*account.Account, error) {
-	var infraAccount Account
+func (s *PostgresAccountStorage) getAccountByNameImpl(userId uint, accountName string) (*domain.Account, error) {
+	var postgresAccount PostgresAccount
 
-	err := s.db.Table("accounts").Where("user_id = ? AND name = ?", userId, accountName).First(&infraAccount).Error
+	err := s.db.Table("accounts").Where("user_id = ? AND name = ?", userId, accountName).First(&postgresAccount).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"layer": "infra",
-			"func":  "getAccountByNameImpl",
+			"layer":   "infra",
+			"package": "accountpg",
+			"func":    "getAccountByNameImpl",
 		}).Error(err)
 
 		return nil, errors.New("cannot find account")
 	}
 
-	domainAccount := s.infraAccountToDomain(&infraAccount)
+	domainAccount := BuildDomainAccount(&postgresAccount)
 
 	return domainAccount, nil
 }
 
-func (s *PostgresAccountStorage) getAccountByIdImpl(accountId uint) (*account.Account, error) {
-	var infraAccount Account
+func (s *PostgresAccountStorage) getAccountByIdImpl(accountId uint) (*domain.Account, error) {
+	var postgresAccount PostgresAccount
 
-	err := s.db.Table("accounts").Where("id = ?", accountId).First(&infraAccount).Error
+	err := s.db.Table("accounts").Where("id = ?", accountId).First(&postgresAccount).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"layer": "infra",
-			"func":  "getAccountByIdImpl",
+			"layer":   "infra",
+			"package": "accountpg",
+			"func":    "getAccountByIdImpl",
 		}).Error(err)
 
 		return nil, errors.New("cannot find account")
 	}
 
-	domainAccount := s.infraAccountToDomain(&infraAccount)
+	domainAccount := BuildDomainAccount(&postgresAccount)
 
 	return domainAccount, nil
 }
 
-func (s *PostgresAccountStorage) getAccountsImpl(userId uint) ([]*account.Account, error) {
-	var infraAccounts []*Account
+func (s *PostgresAccountStorage) getAccountsImpl(userId uint) ([]*domain.Account, error) {
+	var postgresAccounts []*PostgresAccount
 
-	err := s.db.Table("accounts").Where("user_id = ?", userId).Find(&infraAccounts).Error
+	err := s.db.Table("accounts").Where("user_id = ?", userId).Find(&postgresAccounts).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"layer": "infra",
-			"func":  "getAccountsImpl",
+			"layer":   "infra",
+			"package": "accountpg",
+			"func":    "getAccountsImpl",
 		}).Error(err)
 
 		return nil, err
 	}
 
-	domainAccounts := s.infraAccountsToDomain(infraAccounts)
+	domainAccounts := BuildDomainAccounts(postgresAccounts)
 	return domainAccounts, nil
 }
 
-func (s *PostgresAccountStorage) updateBalanceImpl(account *Account, balance int) error {
-	account.Balance = balance
+func (s *PostgresAccountStorage) updateBalanceImpl(postgresAccount *PostgresAccount, balance int) error {
+	postgresAccount.Balance = balance
 
-	err := s.db.Save(&account).Error
+	err := s.db.Table("accounts").Save(&postgresAccount).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"layer": "infra",
-			"func":  "updateBalanceImpl",
+			"layer":   "infra",
+			"package": "accountpg",
+			"func":    "updateBalanceImpl",
 		}).Error(err)
 
 		return err
@@ -164,26 +170,19 @@ func (s *PostgresAccountStorage) updateBalanceImpl(account *Account, balance int
 	return nil
 }
 
-func (s *PostgresAccountStorage) deleteAccountImpl(domainAccount *account.Account) error {
-	infraAccount := s.DomainAccountToInfra(domainAccount)
+func (s *PostgresAccountStorage) deleteAccountImpl(domainAccount *domain.Account) error {
+	postgresAccount := BuildPostgresAccount(domainAccount)
 
-	err := s.db.Delete(&infraAccount).Error
+	err := s.db.Table("accounts").Delete(&postgresAccount).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"layer": "infra",
-			"func":  "deleteAccountImpl",
+			"layer":   "infra",
+			"package": "accountpg",
+			"func":    "deleteAccountImpl",
 		}).Error(err)
 
 		return err
 	}
 
 	return nil
-}
-
-func (s *PostgresAccountStorage) isZeroAccountBalance(balance int) bool {
-	return balance <= 0
-}
-
-func (s *PostgresAccountStorage) isMainAccountType(accountType string) bool {
-	return accountType == "Main"
 }

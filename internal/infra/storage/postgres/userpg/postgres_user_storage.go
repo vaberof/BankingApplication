@@ -29,57 +29,61 @@ func (s *PostgresUserStorage) GetUserByUsername(username string) (*domain.User, 
 }
 
 func (s *PostgresUserStorage) createUserImpl(username string, password string) (*domain.User, error) {
-	var infraUser User
+	var postgresUser PostgresUser
 
-	infraUser.Username = username
-	infraUser.Password = password
+	postgresUser.Username = username
+	postgresUser.Password = password
 
-	err := s.db.Create(&infraUser).Error
+	err := s.db.Table("users").Create(&postgresUser).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"layer": "infra",
-			"func":  "createUserImpl",
+			"layer":   "infra",
+			"package": "userpg",
+			"func":    "createUserImpl",
 		}).Error(err)
 
 		return nil, err
 	}
 
-	domainUser := s.infraUserToDomain(&infraUser)
+	domainUser := BuildDomainUser(&postgresUser)
+
 	return domainUser, nil
 }
 
 func (s *PostgresUserStorage) getUserByIdImpl(userId uint) (*domain.User, error) {
-	var user User
+	var postgresUser PostgresUser
 
-	err := s.db.Table("users").Where("id = ?", userId).First(&user).Error
+	err := s.db.Table("users").Where("id = ?", userId).First(&postgresUser).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"layer": "infra",
-			"func":  "getUserByIdImpl",
+			"layer":   "infra",
+			"package": "userpg",
+			"func":    "getUserByIdImpl",
 		}).Error(err)
 
 		return nil, err
 	}
 
-	domainUser := s.infraUserToDomain(&user)
+	domainUser := BuildDomainUser(&postgresUser)
 
 	return domainUser, nil
 }
 
 func (s *PostgresUserStorage) getUserByUsernameImpl(username string) (*domain.User, error) {
-	var user User
+	var postgresUser PostgresUser
 
-	err := s.db.Table("users").Where("username = ?", username).First(&user).Error
+	err := s.db.Table("users").Where("username = ?", username).First(&postgresUser).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"layer": "infra",
-			"func":  "getUserByUsernameImpl",
+			"layer":   "infra",
+			"package": "userpg",
+			"func":    "getUserByUsernameImpl",
 		}).Error(err)
 
 		return nil, err
 	}
 
-	domainUser := s.infraUserToDomain(&user)
+	domainUser := BuildDomainUser(&postgresUser)
 
 	return domainUser, nil
 }

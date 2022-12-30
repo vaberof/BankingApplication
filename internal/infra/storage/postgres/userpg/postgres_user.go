@@ -2,7 +2,7 @@ package userpg
 
 import "time"
 
-type User struct {
+type PostgresUser struct {
 	Id        uint `gorm:"primaryKey"`
 	Username  string
 	Password  string
