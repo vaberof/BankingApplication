@@ -10,7 +10,7 @@ import (
 // @Description	Get all transfers you have made
 // @ID				Gets transfers
 // @Produce		json
-// @Success		200	{string}	error
+// @Success		200	{array}	transfer.Transfer
 // @Failure		401	{object}	error
 // @Failure		500	{object}	error
 // @Router			/transfers [get]

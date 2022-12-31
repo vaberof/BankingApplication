@@ -41,16 +41,16 @@ func (s *PostgresDepositStorage) saveDepositImpl(
 	payeeAccountId uint,
 	amount uint) error {
 
-	var deposit PostgresDeposit
+	var postgresDeposit PostgresDeposit
 
-	deposit.SenderId = senderId
-	deposit.SenderUsername = senderUsername
-	deposit.SenderAccountId = senderAccountId
-	deposit.PayeeId = payeeId
-	deposit.PayeeUsername = payeeUsername
-	deposit.PayeeAccountId = payeeAccountId
-	deposit.Amount = amount
-	err := s.db.Table("deposits").Create(&deposit).Error
+	postgresDeposit.SenderId = senderId
+	postgresDeposit.SenderUsername = senderUsername
+	postgresDeposit.SenderAccountId = senderAccountId
+	postgresDeposit.PayeeId = payeeId
+	postgresDeposit.PayeeUsername = payeeUsername
+	postgresDeposit.PayeeAccountId = payeeAccountId
+	postgresDeposit.Amount = amount
+	err := s.db.Table("deposits").Create(&postgresDeposit).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"layer": "infra",

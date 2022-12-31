@@ -16,7 +16,7 @@ type createAccountRequestBody struct {
 // @Accept			json
 // @Produce		json
 // @Param			input	body		createAccountRequestBody	true	"account name"
-// @Success		200		{string}	error
+// @Success		200		{object}	views.AccountResponse
 // @Failure		400		{object}	error
 // @Failure		401		{object}	error
 // @Failure		500		{object}	error
