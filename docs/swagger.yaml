@@ -1,29 +1,5 @@
 basePath: /api
 definitions:
-  account.GetAccountResponse:
-    properties:
-      balance:
-        type: integer
-      id:
-        type: integer
-      name:
-        type: string
-      type:
-        type: string
-    type: object
-  handler.GetDepositResponse:
-    properties:
-      amount:
-        type: integer
-      date:
-        type: string
-      payee_account_id:
-        type: integer
-      sender_account_id:
-        type: integer
-      sender_username:
-        type: string
-    type: object
   handler.createAccountRequestBody:
     properties:
       name:
@@ -60,6 +36,67 @@ definitions:
       username:
         type: string
     type: object
+  transfer.Transfer:
+    properties:
+      amount:
+        type: integer
+      date:
+        type: string
+      payeeAccountId:
+        type: integer
+      payeeUsername:
+        type: string
+      senderAccountId:
+        type: integer
+      transferType:
+        type: string
+    type: object
+  views.AccountResponse:
+    properties:
+      balance:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      type:
+        type: string
+    type: object
+  views.DepositResponse:
+    properties:
+      amount:
+        type: integer
+      date:
+        type: string
+      payee_account_id:
+        type: integer
+      sender_account_id:
+        type: integer
+      sender_username:
+        type: string
+    type: object
+  views.TransferResponse:
+    properties:
+      amount:
+        type: integer
+      date:
+        type: string
+      payee_account_id:
+        type: integer
+      payee_username:
+        type: string
+      sender_account_id:
+        type: integer
+      transfer_type:
+        type: string
+    type: object
+  views.UserResponse:
+    properties:
+      id:
+        type: integer
+      username:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -72,9 +109,8 @@ paths:
       consumes:
       - application/json
       description: Delete a bank account with specific name
-      operationId: deletes custom bank account
       parameters:
-      - description: account name
+      - description: Account name
         in: body
         name: input
         required: true
@@ -84,28 +120,30 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Successfully deleted
           schema:
             type: string
         "400":
-          description: Bad Request
-          schema: {}
+          description: Invalid Request Body
+          schema:
+            type: string
         "401":
-          description: Unauthorized
-          schema: {}
+          description: Authorization information is missing or invalid
+          schema:
+            type: string
         "500":
-          description: Internal Server Error
-          schema: {}
+          description: Unexpected error
+          schema:
+            type: string
       summary: Delete a bank account
       tags:
       - Bank Account
     post:
       consumes:
       - application/json
-      description: Create a new custom bank account with specific name
-      operationId: creates custom bank account
+      description: Create a new bank account with specific name
       parameters:
-      - description: account name
+      - description: Account name
         in: body
         name: input
         required: true
@@ -115,73 +153,54 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Successfully created
+          schema:
+            $ref: '#/definitions/views.AccountResponse'
+        "400":
+          description: Invalid request body
           schema:
             type: string
-        "400":
-          description: Bad Request
-          schema: {}
         "401":
-          description: Unauthorized
-          schema: {}
+          description: Authorization information is missing or invalid
+          schema:
+            type: string
         "500":
-          description: Internal Server Error
-          schema: {}
+          description: Unexpected error
+          schema:
+            type: string
       summary: Create a bank account
       tags:
       - Bank Account
   /accounts:
     get:
-      description: Get all bank accounts you have
-      operationId: gets all bank accounts
+      description: Get all bank accounts user have
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Successfully retrieved
           schema:
             items:
-              $ref: '#/definitions/account.GetAccountResponse'
+              $ref: '#/definitions/views.AccountResponse'
             type: array
         "401":
-          description: Unauthorized
-          schema: {}
+          description: Authorization information is missing or invalid
+          schema:
+            type: string
         "500":
-          description: Internal Server Error
-          schema: {}
+          description: Unexpected error
+          schema:
+            type: string
       summary: Get all bank accounts
       tags:
       - Bank Account
-  /deposits:
-    get:
-      description: Get all deposits other clients have made to your accounts
-      operationId: Gets deposits
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/handler.GetDepositResponse'
-            type: array
-        "401":
-          description: Unauthorized
-          schema: {}
-        "500":
-          description: Internal Server Error
-          schema: {}
-      summary: Get all deposits
-      tags:
-      - Deposit
-  /login:
+  /auth/login:
     post:
       consumes:
       - application/json
       description: Login into account
-      operationId: logins into account
       parameters:
-      - description: user data
+      - description: User data
         in: body
         name: input
         required: true
@@ -191,47 +210,48 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Successfully logged in
           schema:
             type: string
         "400":
-          description: Bad Request
-          schema: {}
+          description: Invalid Request Body
+          schema:
+            type: string
         "401":
-          description: Unauthorized
-          schema: {}
+          description: Authorization information is missing or invalid
+          schema:
+            type: string
         "500":
-          description: Internal Server Error
-          schema: {}
+          description: Unexpected error
+          schema:
+            type: string
       summary: Login
       tags:
       - Auth
-  /logout:
+  /auth/logout:
     post:
       description: Logout from account
-      operationId: logs out from account
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Successfully logged out
           schema:
             type: string
         "401":
-          description: Unauthorized
+          description: Authorization information is missing or invalid
           schema:
             type: string
       summary: Logout
       tags:
       - Auth
-  /register:
+  /auth/register:
     post:
       consumes:
       - application/json
-      description: Register new user
-      operationId: Registers new user
+      description: Register a new user
       parameters:
-      - description: user data
+      - description: User data
         in: body
         name: input
         required: true
@@ -241,26 +261,51 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Successfully signed up
+          schema:
+            $ref: '#/definitions/views.UserResponse'
+        "400":
+          description: Invalid Request Body
           schema:
             type: string
-        "400":
-          description: Bad Request
-          schema: {}
         "500":
-          description: Internal Server Error
-          schema: {}
+          description: Unexpected error
+          schema:
+            type: string
       summary: Register
       tags:
       - Auth
+  /deposits:
+    get:
+      description: Get all deposits that have been made to user accounts from other
+        clients
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved
+          schema:
+            items:
+              $ref: '#/definitions/views.DepositResponse'
+            type: array
+        "401":
+          description: Authorization information is missing or invalid
+          schema:
+            type: string
+        "500":
+          description: Unexpected error
+          schema:
+            type: string
+      summary: Get all deposits
+      tags:
+      - Deposit
   /transfer:
     post:
       consumes:
       - application/json
-      description: Make a transfer between your/other clients accounts
-      operationId: Makes a transfer
+      description: Make a transfer between own/clients accounts
       parameters:
-      - description: transfer data
+      - description: Transfer data
         in: body
         name: input
         required: true
@@ -270,38 +315,44 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Successfully made a transfer
+          schema:
+            $ref: '#/definitions/views.TransferResponse'
+        "400":
+          description: Invalid request body
           schema:
             type: string
-        "400":
-          description: Bad Request
-          schema: {}
         "401":
-          description: Unauthorized
-          schema: {}
+          description: Authorization information is missing or invalid
+          schema:
+            type: string
         "500":
-          description: Internal Server Error
-          schema: {}
+          description: Unexpected error
+          schema:
+            type: string
       summary: Make a transfer
       tags:
       - Transfer
   /transfers:
     get:
-      description: Get all transfers you have made
-      operationId: Gets transfers
+      description: Get all transfers user have made between own/other accounts
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Successfully retrieved
+          schema:
+            items:
+              $ref: '#/definitions/transfer.Transfer'
+            type: array
+        "401":
+          description: Authorization information is missing or invalid
           schema:
             type: string
-        "401":
-          description: Unauthorized
-          schema: {}
         "500":
-          description: Internal Server Error
-          schema: {}
+          description: Unexpected error
+          schema:
+            type: string
       summary: Get all transfers
       tags:
       - Transfer

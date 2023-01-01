@@ -9,18 +9,17 @@ type createAccountRequestBody struct {
 	Name string `json:"name"`
 }
 
-// @Summary		Create a bank account
-// @Tags			Bank Account
-// @Description	Create a new custom bank account with specific name
-// @ID				creates custom bank account
-// @Accept			json
-// @Produce		json
-// @Param			input	body		createAccountRequestBody	true	"account name"
-// @Success		200		{object}	views.AccountResponse
-// @Failure		400		{object}	error
-// @Failure		401		{object}	error
-// @Failure		500		{object}	error
-// @Router			/account [post]
+//	@Summary		Create a bank account
+//	@Tags			Bank Account
+//	@Description	Create a new bank account with specific name
+//	@Accept			json
+//	@Produce		json
+//	@Param			input	body		createAccountRequestBody	true	"Account name"
+//	@Success		200		{object}	views.AccountResponse		"Successfully created"
+//	@Failure		400		{string}	error						"Invalid request body"
+//	@Failure		401		{string}	error						"Authorization information is missing or invalid"
+//	@Failure		500		{string}	error						"Unexpected error"
+//	@Router			/account [post]
 func (h *HttpHandler) createAccount(c *fiber.Ctx) error {
 	user, err := h.authService.AuthenticateUser(c.Cookies("jwt"))
 	if err != nil {

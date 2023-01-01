@@ -10,18 +10,17 @@ type userLoginRequestBody struct {
 	Password string `json:"password" bind:"required"`
 }
 
-// @Summary		Login
-// @Tags			Auth
-// @Description	Login into account
-// @ID				logins into account
-// @Accept			json
-// @Produce		json
-// @Param			input	body		userLoginRequestBody	true	"user data"
-// @Success		200		{string}	error
-// @Failure		400		{object}	error
-// @Failure		401		{object}	error
-// @Failure		500		{object}	error
-// @Router			/login [post]
+//	@Summary		Login
+//	@Tags			Auth
+//	@Description	Login into account
+//	@Accept			json
+//	@Produce		json
+//	@Param			input	body		userLoginRequestBody	true	"User data"
+//	@Success		200		{string}	string					"Successfully logged in"
+//	@Failure		400		{string}	error					"Invalid Request Body"
+//	@Failure		401		{string}	error					"Authorization information is missing or invalid"
+//	@Failure		500		{string}	error					"Unexpected error"
+//	@Router			/auth/login [post]
 func (h *HttpHandler) login(c *fiber.Ctx) error {
 	var userLoginReqBody userLoginRequestBody
 

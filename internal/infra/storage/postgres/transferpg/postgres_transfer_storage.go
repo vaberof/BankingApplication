@@ -1,8 +1,8 @@
 package transferpg
 
 import (
-	"errors"
 	"github.com/sirupsen/logrus"
+	"github.com/vaberof/MockBankingApplication/internal/domain/account"
 	"github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres/accountpg"
 	service "github.com/vaberof/MockBankingApplication/internal/service/transfer"
 	"gorm.io/gorm"
@@ -21,16 +21,14 @@ func NewPostgresTransferStorage(db *gorm.DB, accountStorage AccountStorage) *Pos
 }
 
 func (s *PostgresTransferStorage) SaveTransfer(
-	senderId uint,
 	senderUsername string,
-	senderAccountId uint,
-	payeeId uint,
+	senderAccount *account.Account,
 	payeeUsername string,
-	payeeAccountId uint,
+	payeeAccount *account.Account,
 	amount uint,
 	transferType string) (*service.Transfer, error) {
 
-	return s.saveTransferImpl(senderId, senderUsername, senderAccountId, payeeId, payeeUsername, payeeAccountId, amount, transferType)
+	return s.saveTransferImpl(senderUsername, senderAccount, payeeUsername, payeeAccount, amount, transferType)
 }
 
 func (s *PostgresTransferStorage) GetTransfers(userId uint) ([]*service.Transfer, error) {
@@ -38,32 +36,30 @@ func (s *PostgresTransferStorage) GetTransfers(userId uint) ([]*service.Transfer
 }
 
 func (s *PostgresTransferStorage) saveTransferImpl(
-	senderId uint,
 	senderUsername string,
-	senderAccountId uint,
-	payeeId uint,
+	senderAccount *account.Account,
 	payeeUsername string,
-	payeeAccountId uint,
+	payeeAccount *account.Account,
 	amount uint,
 	transferType string) (*service.Transfer, error) {
 
-	senderAccount, payeeAccount, err := s.preprocessTransfer(senderAccountId, payeeAccountId, amount)
+	postgresSenderAccount, postgresPayeeAccount, err := s.preprocessTransfer(senderAccount, payeeAccount)
 	if err != nil {
 		return nil, err
 	}
 
-	err = s.processTransfer(senderAccount, payeeAccount, amount)
+	err = s.processTransfer(postgresSenderAccount, postgresPayeeAccount, amount)
 	if err != nil {
 		return nil, err
 	}
 
 	serviceTransfer, err := s.createTransfer(
-		senderId,
+		postgresSenderAccount.UserId,
 		senderUsername,
-		senderAccountId,
-		payeeId,
+		postgresSenderAccount.Id,
+		postgresPayeeAccount.UserId,
 		payeeUsername,
-		payeeAccountId,
+		payeeAccount.Id,
 		amount,
 		transferType)
 	if err != nil {
@@ -74,37 +70,24 @@ func (s *PostgresTransferStorage) saveTransferImpl(
 }
 
 func (s *PostgresTransferStorage) preprocessTransfer(
-	senderAccountId uint,
-	payeeAccountId uint,
-	amount uint) (*accountpg.PostgresAccount, *accountpg.PostgresAccount, error) {
+	senderAccount *account.Account,
+	payeeAccount *account.Account) (*accountpg.PostgresAccount, *accountpg.PostgresAccount, error) {
 
-	senderAccount, err := s.accountStorage.GetAccountById(senderAccountId)
-	if err != nil {
-		return nil, nil, err
-	}
+	senderPostgresAccount := accountpg.BuildPostgresAccount(senderAccount)
+	payeePostgresAccount := accountpg.BuildPostgresAccount(payeeAccount)
 
-	if !s.isEnoughFunds(senderAccount.Balance, amount) {
-		return nil, nil, errors.New("insufficient funds")
-	}
-
-	payeeAccount, err := s.accountStorage.GetAccountById(payeeAccountId)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	senderInfraAccount := accountpg.BuildPostgresAccount(senderAccount)
-	payeeAccountInfraAccount := accountpg.BuildPostgresAccount(payeeAccount)
-
-	return senderInfraAccount, payeeAccountInfraAccount, nil
+	return senderPostgresAccount, payeePostgresAccount, nil
 }
 
 func (s *PostgresTransferStorage) processTransfer(senderAccount *accountpg.PostgresAccount, payeeAccount *accountpg.PostgresAccount, amount uint) error {
-	err := s.accountStorage.UpdateBalance(senderAccount, senderAccount.Balance-int(amount))
+	convAmount := int(amount)
+
+	err := s.accountStorage.UpdateBalance(senderAccount, senderAccount.Balance-convAmount)
 	if err != nil {
 		return err
 	}
 
-	err = s.accountStorage.UpdateBalance(payeeAccount, payeeAccount.Balance+int(amount))
+	err = s.accountStorage.UpdateBalance(payeeAccount, payeeAccount.Balance+convAmount)
 	if err != nil {
 		return err
 	}
@@ -136,8 +119,9 @@ func (s *PostgresTransferStorage) createTransfer(
 	err := s.db.Table("transfers").Create(&postgresTransfer).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"layer": "infra",
-			"func":  "createTransfer",
+			"layer":   "infra",
+			"package": "transferpg",
+			"func":    "createTransfer",
 		}).Error(err)
 
 		return nil, err
@@ -153,8 +137,9 @@ func (s *PostgresTransferStorage) getTransfersImpl(userId uint) ([]*service.Tran
 	err := s.db.Table("transfers").Where("sender_id = ?", userId).Find(&postgresTransfers).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"layer": "infra",
-			"func":  "getTransfersImpl",
+			"layer":   "infra",
+			"package": "transferpg",
+			"func":    "getTransfersImpl",
 		}).Error(err)
 
 		return nil, err
@@ -163,8 +148,4 @@ func (s *PostgresTransferStorage) getTransfersImpl(userId uint) ([]*service.Tran
 	serviceTransfers := BuildServiceTransfers(postgresTransfers)
 
 	return serviceTransfers, nil
-}
-
-func (s *PostgresTransferStorage) isEnoughFunds(balance int, amount uint) bool {
-	return balance-int(amount) >= 0
 }

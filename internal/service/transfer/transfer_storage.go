@@ -1,13 +1,13 @@
 package transfer
 
+import "github.com/vaberof/MockBankingApplication/internal/domain/account"
+
 type TransferStorage interface {
 	SaveTransfer(
-		senderId uint,
 		senderUsername string,
-		senderAccountId uint,
-		payeeId uint,
+		senderAccount *account.Account,
 		payeeUsername string,
-		payeeAccountId uint,
+		payeeAccount *account.Account,
 		amount uint,
 		transferType string) (*Transfer, error)
 

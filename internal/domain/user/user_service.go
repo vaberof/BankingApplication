@@ -2,6 +2,7 @@ package user
 
 import (
 	"errors"
+	"fmt"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -48,7 +49,7 @@ func (s *UserService) createUserImpl(username string, password string) (*User, e
 
 	err = s.accountStorage.CreateInitialAccount(user.Id)
 	if err != nil {
-		return nil, errors.New("cannot create initial account")
+		return nil, fmt.Errorf("cannot create initial account: %s", err.Error())
 	}
 
 	return user, nil

@@ -7,5 +7,6 @@ func FromString(userId string) (UserId, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	return UserId(uint(convUserId)), nil
 }

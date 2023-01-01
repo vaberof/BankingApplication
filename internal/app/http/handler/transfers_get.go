@@ -5,15 +5,16 @@ import (
 	"github.com/vaberof/MockBankingApplication/internal/app/http/views"
 )
 
-// @Summary		Get all transfers
-// @Tags			Transfer
-// @Description	Get all transfers you have made
-// @ID				Gets transfers
-// @Produce		json
-// @Success		200	{array}	transfer.Transfer
-// @Failure		401	{object}	error
-// @Failure		500	{object}	error
-// @Router			/transfers [get]
+//	@Summary		Get all transfers
+//	@Tags			Transfer
+//	@Description	Get all transfers user have made between own/other accounts
+//	@Produce		json
+//	@Success		200	{array}		transfer.Transfer	"Successfully retrieved"
+//
+//	@Failure		401	{string}	error				"Authorization information is missing or invalid"
+//	@Failure		500	{string}	error				"Unexpected error"
+//
+//	@Router			/transfers [get]
 func (h *HttpHandler) getTransfers(c *fiber.Ctx) error {
 	user, err := h.authService.AuthenticateUser(c.Cookies("jwt"))
 	if err != nil {

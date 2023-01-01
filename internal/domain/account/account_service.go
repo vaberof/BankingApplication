@@ -1,6 +1,9 @@
 package account
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 type AccountService struct {
 	accountStorage AccountStorage
@@ -42,7 +45,7 @@ func (s *AccountService) createCustomAccountImpl(userId uint, accountName string
 
 	account, err := s.accountStorage.CreateCustomAccount(userId, accountName)
 	if err != nil {
-		return nil, errors.New("cannot create account")
+		return nil, fmt.Errorf("cannot create account: %s", err.Error())
 	}
 
 	return account, nil
@@ -98,7 +101,7 @@ func (s *AccountService) getAccountsImpl(userId uint) ([]*Account, error) {
 }
 
 func (s *AccountService) isZeroAccountBalance(balance int) bool {
-	return balance <= 0
+	return balance == 0
 }
 
 func (s *AccountService) isMainAccountType(accountType string) bool {

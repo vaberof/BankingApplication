@@ -53,8 +53,9 @@ func (s *PostgresDepositStorage) saveDepositImpl(
 	err := s.db.Table("deposits").Create(&postgresDeposit).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"layer": "infra",
-			"func":  "saveDepositImpl",
+			"layer":   "infra",
+			"package": "depositpg",
+			"func":    "saveDepositImpl",
 		}).Error(err)
 
 		return err
@@ -69,8 +70,9 @@ func (s *PostgresDepositStorage) getDepositsImpl(userId uint) ([]*deposit.Deposi
 	err := s.db.Table("deposits").Where("payee_id = ?", userId).Find(&postgresDeposits).Error
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"layer": "infra",
-			"func":  "getDepositsImpl",
+			"layer":   "infra",
+			"package": "depositpg",
+			"func":    "getDepositsImpl",
 		}).Error(err)
 
 		return nil, err

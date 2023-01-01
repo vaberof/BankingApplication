@@ -2,6 +2,7 @@ package deposit
 
 import (
 	"errors"
+	"fmt"
 )
 
 type DepositService struct {
@@ -33,7 +34,7 @@ func (s *DepositService) GetDeposits(userId uint) ([]*Deposit, error) {
 func (s *DepositService) getDepositsImpl(userId uint) ([]*Deposit, error) {
 	deposits, err := s.depositStorage.GetDeposits(userId)
 	if err != nil {
-		return nil, errors.New("cannot get deposits")
+		return nil, fmt.Errorf("cannot get deposits: %s", err.Error())
 	}
 
 	if len(deposits) == 0 {

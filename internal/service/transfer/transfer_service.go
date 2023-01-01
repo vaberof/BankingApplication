@@ -2,7 +2,9 @@ package transfer
 
 import (
 	"errors"
-	domain "github.com/vaberof/MockBankingApplication/internal/domain/user"
+	"fmt"
+	"github.com/vaberof/MockBankingApplication/internal/domain/account"
+	"github.com/vaberof/MockBankingApplication/internal/domain/user"
 )
 
 type TransferService struct {
@@ -16,13 +18,13 @@ func NewTransferService(
 	transferStorage TransferStorage,
 	depositService DepositService,
 	accountStorage AccountStorage,
-	userResponseService UserService) *TransferService {
+	userService UserService) *TransferService {
 
 	return &TransferService{
 		transferStorage: transferStorage,
 		depositService:  depositService,
 		accountStorage:  accountStorage,
-		userService:     userResponseService,
+		userService:     userService,
 	}
 }
 
@@ -35,29 +37,28 @@ func (s *TransferService) GetTransfers(userId uint) ([]*Transfer, error) {
 }
 
 func (s *TransferService) makeTransferImpl(senderId uint, senderAccountId uint, payeeAccountId uint, amount uint) (*Transfer, error) {
-	if err := s.preprocessTransfer(senderAccountId, payeeAccountId, amount); err != nil {
+	senderAccount, err := s.preprocessTransfer(senderId, senderAccountId, payeeAccountId, amount)
+	if err != nil {
 		return nil, err
 	}
 
-	senderUser, payeeUser, transferType, err := s.processTransfer(senderId, payeeAccountId)
+	senderUser, payeeUser, payeeAccount, transferType, err := s.processTransfer(senderId, payeeAccountId)
 	if err != nil {
 		return nil, err
 	}
 
 	transfer, err := s.transferStorage.SaveTransfer(
-		senderId,
 		senderUser.Username,
-		senderAccountId,
-		payeeUser.Id,
+		senderAccount,
 		payeeUser.Username,
-		payeeAccountId,
+		payeeAccount,
 		amount,
 		transferType)
 	if err != nil {
 		return nil, err
 	}
 
-	if s.isPersonalTransfer(senderId, payeeUser.Id) {
+	if s.isPersonalTransfer(transferType) {
 		return transfer, nil
 	}
 
@@ -70,57 +71,70 @@ func (s *TransferService) makeTransferImpl(senderId uint, senderAccountId uint, 
 		payeeAccountId,
 		amount)
 	if err != nil {
-		return transfer, err
+		return nil, err
 	}
 
 	return transfer, nil
 }
 
-func (s *TransferService) preprocessTransfer(senderAccountId uint, payeeAccountId uint, amount uint) error {
-	if senderAccountId == payeeAccountId {
-		return errors.New("cannot make a transfer to the same account")
+func (s *TransferService) preprocessTransfer(senderId uint, senderAccountId uint, payeeAccountId uint, amount uint) (*account.Account, error) {
+	senderAccount, err := s.accountStorage.GetAccountById(senderAccountId)
+	if err != nil {
+		return nil, errors.New("sender`s account not found")
+	}
+
+	if !s.isSenderAccountOwner(senderId, senderAccount.UserId) {
+		return nil, errors.New("account does not belong to sender")
+	}
+
+	if s.isTheSameAccount(senderAccountId, payeeAccountId) {
+		return nil, errors.New("cannot make a transfer to the same account")
 	}
 
 	if !s.isAcceptableAmount(amount) {
-		return errors.New("amount must be greater than 0")
+		return nil, errors.New("amount must be greater than 0")
 	}
 
-	return nil
+	if !s.isEnoughFunds(senderAccount.Balance, amount) {
+		return nil, errors.New("insufficient funds to make a transfer")
+	}
+
+	return senderAccount, nil
 }
 
-func (s *TransferService) processTransfer(senderId uint, payeeAccountId uint) (*domain.User, *domain.User, string, error) {
+func (s *TransferService) processTransfer(senderId uint, payeeAccountId uint) (*user.User, *user.User, *account.Account, string, error) {
 	payeeAccount, err := s.accountStorage.GetAccountById(payeeAccountId)
 	if err != nil {
-		return nil, nil, "", errors.New("cannot get payee`s account")
+		return nil, nil, nil, "", errors.New("cannot find payee`s account")
 	}
 
 	payeeUser, err := s.userService.GetUserById(payeeAccount.UserId)
 	if err != nil {
-		return nil, nil, "", errors.New("cannot get payee user")
+		return nil, nil, nil, "", errors.New("cannot find payee user")
 	}
 
 	transferType := s.getTransferType(senderId, payeeAccount.UserId)
 
-	if s.isPersonalTransfer(senderId, payeeUser.Id) {
-		return payeeUser, payeeUser, transferType, nil
+	if s.isPersonalTransfer(transferType) {
+		return payeeUser, payeeUser, payeeAccount, transferType, nil
 	}
 
 	senderUser, err := s.userService.GetUserById(senderId)
 	if err != nil {
-		return nil, nil, "", errors.New("cannot get sender user")
+		return nil, nil, nil, "", errors.New("cannot find sender user")
 	}
 
-	return senderUser, payeeUser, transferType, nil
+	return senderUser, payeeUser, payeeAccount, transferType, nil
 }
 
 func (s *TransferService) getTransfersImpl(userId uint) ([]*Transfer, error) {
 	transfers, err := s.transferStorage.GetTransfers(userId)
 	if err != nil {
-		return nil, errors.New("cannot get transfers")
+		return nil, fmt.Errorf("cannot get transfers: %s", err.Error())
 	}
 
 	if len(transfers) == 0 {
-		return nil, errors.New("you have not made any transfers yet")
+		return nil, errors.New("there are no transfers yet")
 	}
 
 	return transfers, nil
@@ -133,10 +147,22 @@ func (s *TransferService) getTransferType(senderId uint, payeeId uint) string {
 	return "client"
 }
 
-func (s *TransferService) isPersonalTransfer(senderId uint, payeeId uint) bool {
-	return senderId == payeeId
+func (s *TransferService) isPersonalTransfer(transferType string) bool {
+	return transferType == "personal"
+}
+
+func (s *TransferService) isTheSameAccount(senderAccountId uint, payeeAccountId uint) bool {
+	return senderAccountId == payeeAccountId
+}
+
+func (s *TransferService) isSenderAccountOwner(senderId uint, accountOwnerId uint) bool {
+	return senderId == accountOwnerId
 }
 
 func (s *TransferService) isAcceptableAmount(amount uint) bool {
 	return amount > 0
+}
+
+func (s *TransferService) isEnoughFunds(balance int, amount uint) bool {
+	return balance-int(amount) >= 0
 }

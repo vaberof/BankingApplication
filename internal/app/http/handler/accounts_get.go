@@ -5,15 +5,16 @@ import (
 	"github.com/vaberof/MockBankingApplication/internal/app/http/views"
 )
 
-// @Summary		Get all bank accounts
-// @Tags			Bank Account
-// @Description	Get all bank accounts you have
-// @ID				gets all bank accounts
-// @Produce		json
-// @Success		200	{array}		views.AccountResponse
-// @Failure		401	{object}	error
-// @Failure		500	{object}	error
-// @Router			/accounts [get]
+//	@Summary		Get all bank accounts
+//	@Tags			Bank Account
+//	@Description	Get all bank accounts user have
+//	@Produce		json
+//	@Success		200	{array}		views.AccountResponse	"Successfully retrieved"
+//
+//	@Failure		401	{string}	error					"Authorization information is missing or invalid"
+//	@Failure		500	{string}	error					"Unexpected error"
+//
+//	@Router			/accounts [get]
 func (h *HttpHandler) getAccounts(c *fiber.Ctx) error {
 	user, err := h.authService.AuthenticateUser(c.Cookies("jwt"))
 	if err != nil {
