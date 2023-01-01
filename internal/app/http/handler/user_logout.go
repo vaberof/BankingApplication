@@ -11,7 +11,7 @@ import (
 //	@Produce		json
 //	@Success		200	{string}	string	"Successfully logged out"
 //
-//	@Failure		401	{string}	error	"Authorization information is missing or invalid"
+//	@Failure		401	{string}	string	"Authorization information is missing or invalid"
 //
 //	@Router			/auth/logout [post]
 func (h *HttpHandler) logout(c *fiber.Ctx) error {

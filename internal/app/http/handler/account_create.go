@@ -16,9 +16,9 @@ type createAccountRequestBody struct {
 //	@Produce		json
 //	@Param			input	body		createAccountRequestBody	true	"Account name"
 //	@Success		200		{object}	views.AccountResponse		"Successfully created"
-//	@Failure		400		{string}	error						"Invalid request body"
-//	@Failure		401		{string}	error						"Authorization information is missing or invalid"
-//	@Failure		500		{string}	error						"Unexpected error"
+//	@Failure		400		{string}	string						"Invalid request body"
+//	@Failure		401		{string}	string						"Authorization information is missing or invalid"
+//	@Failure		500		{string}	string						"Unexpected error"
 //	@Router			/account [post]
 func (h *HttpHandler) createAccount(c *fiber.Ctx) error {
 	user, err := h.authService.AuthenticateUser(c.Cookies("jwt"))

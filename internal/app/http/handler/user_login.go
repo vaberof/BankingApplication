@@ -17,9 +17,9 @@ type userLoginRequestBody struct {
 //	@Produce		json
 //	@Param			input	body		userLoginRequestBody	true	"User data"
 //	@Success		200		{string}	string					"Successfully logged in"
-//	@Failure		400		{string}	error					"Invalid Request Body"
-//	@Failure		401		{string}	error					"Authorization information is missing or invalid"
-//	@Failure		500		{string}	error					"Unexpected error"
+//	@Failure		400		{string}	string					"Invalid Request Body"
+//	@Failure		401		{string}	string					"Authorization information is missing or invalid"
+//	@Failure		500		{string}	string					"Unexpected error"
 //	@Router			/auth/login [post]
 func (h *HttpHandler) login(c *fiber.Ctx) error {
 	var userLoginReqBody userLoginRequestBody

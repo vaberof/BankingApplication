@@ -11,8 +11,8 @@ import (
 //	@Produce		json
 //	@Success		200	{array}		transfer.Transfer	"Successfully retrieved"
 //
-//	@Failure		401	{string}	error				"Authorization information is missing or invalid"
-//	@Failure		500	{string}	error				"Unexpected error"
+//	@Failure		401	{string}	string				"Authorization information is missing or invalid"
+//	@Failure		500	{string}	string				"Unexpected error"
 //
 //	@Router			/transfers [get]
 func (h *HttpHandler) getTransfers(c *fiber.Ctx) error {

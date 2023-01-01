@@ -18,10 +18,10 @@ type makeTransferRequestBody struct {
 //	@Produce		json
 //	@Param			input	body		makeTransferRequestBody	true	"Transfer data"
 //	@Success		200		{object}	views.TransferResponse	"Successfully made a transfer"
-//	@Failure		400		{string}	error					"Invalid request body"
+//	@Failure		400		{string}	string					"Invalid request body"
 //
-//	@Failure		401		{string}	error					"Authorization information is missing or invalid"
-//	@Failure		500		{string}	error					"Unexpected error"
+//	@Failure		401		{string}	string					"Authorization information is missing or invalid"
+//	@Failure		500		{string}	string					"Unexpected error"
 //
 //	@Router			/transfer [post]
 func (h *HttpHandler) makeTransfer(c *fiber.Ctx) error {

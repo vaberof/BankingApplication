@@ -11,8 +11,8 @@ import (
 //	@Produce		json
 //	@Success		200	{array}		views.DepositResponse	"Successfully retrieved"
 //
-//	@Failure		401	{string}	error					"Authorization information is missing or invalid"
-//	@Failure		500	{string}	error					"Unexpected error"
+//	@Failure		401	{string}	string					"Authorization information is missing or invalid"
+//	@Failure		500	{string}	string					"Unexpected error"
 //
 //	@Router			/deposits [get]
 func (h *HttpHandler) getDeposits(c *fiber.Ctx) error {

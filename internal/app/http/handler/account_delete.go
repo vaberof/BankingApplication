@@ -16,10 +16,10 @@ type deleteAccountRequestBody struct {
 //	@Produce		json
 //	@Param			input	body		deleteAccountRequestBody	true	"Account name"
 //	@Success		200		{string}	string						"Successfully deleted"
-//	@Failure		400		{string}	error						"Invalid Request Body"
+//	@Failure		400		{string}	string						"Invalid Request Body"
 //
-//	@Failure		401		{string}	error						"Authorization information is missing or invalid"
-//	@Failure		500		{string}	error						"Unexpected error"
+//	@Failure		401		{string}	string						"Authorization information is missing or invalid"
+//	@Failure		500		{string}	string						"Unexpected error"
 //
 //	@Router			/account [delete]
 func (h *HttpHandler) deleteAccount(c *fiber.Ctx) error {
