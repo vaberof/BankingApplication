@@ -18,7 +18,7 @@ const docTemplate = `{
     "paths": {
         "/account": {
             "post": {
-                "description": "Create a new bank account",
+                "description": "Create a new bank account with specific name",
                 "consumes": [
                     "application/json"
                 ],
@@ -29,41 +29,46 @@ const docTemplate = `{
                     "Bank Account"
                 ],
                 "summary": "Create a bank account",
-                "operationId": "creates bank account",
                 "parameters": [
                     {
-                        "description": "account type",
+                        "description": "Account name",
                         "name": "input",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.inputAccount"
+                            "$ref": "#/definitions/handler.createAccountRequestBody"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Successfully created",
+                        "schema": {
+                            "$ref": "#/definitions/views.AccountResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
                         "schema": {
                             "type": "string"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {}
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {}
+                    "401": {
+                        "description": "Authorization information is missing or invalid",
+                        "schema": {
+                            "type": "string"
+                        }
                     },
                     "500": {
-                        "description": "Internal Server Error",
-                        "schema": {}
+                        "description": "Unexpected error",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             },
             "delete": {
-                "description": "Delete a bank account",
+                "description": "Delete a bank account with specific name",
                 "consumes": [
                     "application/json"
                 ],
@@ -74,117 +79,81 @@ const docTemplate = `{
                     "Bank Account"
                 ],
                 "summary": "Delete a bank account",
-                "operationId": "deletes bank account",
                 "parameters": [
                     {
-                        "description": "account type",
+                        "description": "Account name",
                         "name": "input",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.inputAccount"
+                            "$ref": "#/definitions/handler.deleteAccountRequestBody"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Successfully deleted",
                         "schema": {
                             "type": "string"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
-                        "schema": {}
+                        "description": "Invalid Request Body",
+                        "schema": {
+                            "type": "string"
+                        }
                     },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {}
+                    "401": {
+                        "description": "Authorization information is missing or invalid",
+                        "schema": {
+                            "type": "string"
+                        }
                     },
                     "500": {
-                        "description": "Internal Server Error",
-                        "schema": {}
+                        "description": "Unexpected error",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             }
         },
-        "/balance": {
+        "/accounts": {
             "get": {
-                "description": "Get all bank accounts you have",
+                "description": "Get all bank accounts user have",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Balance"
+                    "Bank Account"
                 ],
-                "summary": "Get balance",
-                "operationId": "gets user bank accounts",
+                "summary": "Get all bank accounts",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Successfully retrieved",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/domain.Account"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {}
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {}
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {}
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {}
-                    }
-                }
-            }
-        },
-        "/deposits": {
-            "get": {
-                "description": "Get the deposits made to your bank account(s) using personal or client transfers",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Deposit"
-                ],
-                "summary": "Get deposits",
-                "operationId": "gets all deposits",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/domain.Deposit"
+                                "$ref": "#/definitions/views.AccountResponse"
                             }
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
-                        "schema": {}
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {}
+                        "description": "Authorization information is missing or invalid",
+                        "schema": {
+                            "type": "string"
+                        }
                     },
                     "500": {
-                        "description": "Internal Server Error",
-                        "schema": {}
+                        "description": "Unexpected error",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             }
         },
-        "/login": {
+        "/auth/login": {
             "post": {
                 "description": "Login into account",
                 "consumes": [
@@ -196,42 +165,47 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "SignIn",
-                "operationId": "auth user",
+                "summary": "Login",
                 "parameters": [
                     {
-                        "description": "user info",
+                        "description": "User data",
                         "name": "input",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/domain.User"
+                            "$ref": "#/definitions/handler.userLoginRequestBody"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Successfully logged in",
                         "schema": {
                             "type": "string"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
-                        "schema": {}
+                        "description": "Invalid Request Body",
+                        "schema": {
+                            "type": "string"
+                        }
                     },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {}
+                    "401": {
+                        "description": "Authorization information is missing or invalid",
+                        "schema": {
+                            "type": "string"
+                        }
                     },
                     "500": {
-                        "description": "Internal Server Error",
-                        "schema": {}
+                        "description": "Unexpected error",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             }
         },
-        "/logout": {
+        "/auth/logout": {
             "post": {
                 "description": "Logout from account",
                 "produces": [
@@ -241,16 +215,15 @@ const docTemplate = `{
                     "Auth"
                 ],
                 "summary": "Logout",
-                "operationId": "logs out from account",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Successfully logged out",
                         "schema": {
                             "type": "string"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "Authorization information is missing or invalid",
                         "schema": {
                             "type": "string"
                         }
@@ -258,9 +231,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/signup": {
+        "/auth/register": {
             "post": {
-                "description": "Create a new user",
+                "description": "Register a new user",
                 "consumes": [
                     "application/json"
                 ],
@@ -270,44 +243,78 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "SignUp",
-                "operationId": "creates new user",
+                "summary": "Register",
                 "parameters": [
                     {
-                        "description": "user info",
+                        "description": "User data",
                         "name": "input",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/domain.User"
+                            "$ref": "#/definitions/handler.createUserRequestBody"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Successfully signed up",
+                        "schema": {
+                            "$ref": "#/definitions/views.UserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid Request Body",
                         "schema": {
                             "type": "string"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {}
+                    "500": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/deposits": {
+            "get": {
+                "description": "Get all deposits that have been made to user accounts from other clients",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deposit"
+                ],
+                "summary": "Get all deposits",
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/views.DepositResponse"
+                            }
+                        }
                     },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {}
+                    "401": {
+                        "description": "Authorization information is missing or invalid",
+                        "schema": {
+                            "type": "string"
+                        }
                     },
                     "500": {
-                        "description": "Internal Server Error",
-                        "schema": {}
+                        "description": "Unexpected error",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             }
         },
         "/transfer": {
             "post": {
-                "description": "Make a transfer to own account with the transfer type \"personal\"\nor to another client account with the transfer type \"client\"",
+                "description": "Make a transfer between own/clients accounts",
                 "consumes": [
                     "application/json"
                 ],
@@ -318,97 +325,114 @@ const docTemplate = `{
                     "Transfer"
                 ],
                 "summary": "Make a transfer",
-                "operationId": "makes transfer of client or personal type",
                 "parameters": [
                     {
-                        "description": "transfer info",
+                        "description": "Transfer data",
                         "name": "input",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.inputTransfer"
+                            "$ref": "#/definitions/handler.makeTransferRequestBody"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Successfully made a transfer",
+                        "schema": {
+                            "$ref": "#/definitions/views.TransferResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
                         "schema": {
                             "type": "string"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {}
-                    },
                     "401": {
-                        "description": "Unauthorized",
-                        "schema": {}
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {}
+                        "description": "Authorization information is missing or invalid",
+                        "schema": {
+                            "type": "string"
+                        }
                     },
                     "500": {
-                        "description": "Internal Server Error",
-                        "schema": {}
+                        "description": "Unexpected error",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             }
         },
         "/transfers": {
             "get": {
-                "description": "Get all client/personal transfers you have made",
+                "description": "Get all transfers user have made between own/other accounts",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Transfer"
                 ],
-                "summary": "Get Transfers",
-                "operationId": "gets all transfers",
+                "summary": "Get all transfers",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Successfully retrieved",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/domain.Transfer"
+                                "$ref": "#/definitions/transfer.Transfer"
                             }
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
-                        "schema": {}
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {}
+                        "description": "Authorization information is missing or invalid",
+                        "schema": {
+                            "type": "string"
+                        }
                     },
                     "500": {
-                        "description": "Internal Server Error",
-                        "schema": {}
+                        "description": "Unexpected error",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             }
         }
     },
     "definitions": {
-        "domain.Account": {
+        "handler.createAccountRequestBody": {
             "type": "object",
             "properties": {
-                "balance": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "type": {
+                "name": {
                     "type": "string"
                 }
             }
         },
-        "domain.Deposit": {
+        "handler.createUserRequestBody": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.deleteAccountRequestBody": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.makeTransferRequestBody": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -419,20 +443,88 @@ const docTemplate = `{
                 },
                 "sender_account_id": {
                     "type": "integer"
-                },
-                "sender_username": {
+                }
+            }
+        },
+        "handler.userLoginRequestBody": {
+            "type": "object",
+            "properties": {
+                "password": {
                     "type": "string"
                 },
-                "transfer_type": {
+                "username": {
                     "type": "string"
                 }
             }
         },
-        "domain.Transfer": {
+        "transfer.Transfer": {
             "type": "object",
             "properties": {
                 "amount": {
                     "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "payeeAccountId": {
+                    "type": "integer"
+                },
+                "payeeUsername": {
+                    "type": "string"
+                },
+                "senderAccountId": {
+                    "type": "integer"
+                },
+                "transferType": {
+                    "type": "string"
+                }
+            }
+        },
+        "views.AccountResponse": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "views.DepositResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "payee_account_id": {
+                    "type": "integer"
+                },
+                "sender_account_id": {
+                    "type": "integer"
+                },
+                "sender_username": {
+                    "type": "string"
+                }
+            }
+        },
+        "views.TransferResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
                 },
                 "payee_account_id": {
                     "type": "integer"
@@ -448,38 +540,13 @@ const docTemplate = `{
                 }
             }
         },
-        "domain.User": {
+        "views.UserResponse": {
             "type": "object",
             "properties": {
-                "password": {
-                    "type": "string"
+                "id": {
+                    "type": "integer"
                 },
                 "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "handler.inputAccount": {
-            "type": "object",
-            "properties": {
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "handler.inputTransfer": {
-            "type": "object",
-            "properties": {
-                "amount": {
-                    "type": "integer"
-                },
-                "payee_account_id": {
-                    "type": "integer"
-                },
-                "sender_account_id": {
-                    "type": "integer"
-                },
-                "transfer_type": {
                     "type": "string"
                 }
             }
@@ -491,9 +558,9 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/",
+	BasePath:         "/api",
 	Schemes:          []string{},
-	Title:            "Banking App",
+	Title:            "Mock Banking Application API",
 	Description:      "API Server for Mock Banking Application",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
