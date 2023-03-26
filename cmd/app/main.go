@@ -4,26 +4,32 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
-	"github.com/vaberof/MockBankingApplication/internal/app/handler"
-	"github.com/vaberof/MockBankingApplication/internal/app/repository"
-	"github.com/vaberof/MockBankingApplication/internal/app/repository/postgres"
-	"github.com/vaberof/MockBankingApplication/internal/app/service"
-	"github.com/vaberof/MockBankingApplication/internal/pkg/http/server"
+	"github.com/vaberof/MockBankingApplication/internal/app/http/handler"
+	"github.com/vaberof/MockBankingApplication/internal/domain/account"
+	"github.com/vaberof/MockBankingApplication/internal/domain/user"
+	"github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres"
+	"github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres/accountpg"
+	"github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres/depositpg"
+	"github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres/transferpg"
+	"github.com/vaberof/MockBankingApplication/internal/infra/storage/postgres/userpg"
+	"github.com/vaberof/MockBankingApplication/internal/service/auth"
+	"github.com/vaberof/MockBankingApplication/internal/service/deposit"
+	"github.com/vaberof/MockBankingApplication/internal/service/transfer"
 	"log"
 	"os"
 	"time"
 )
 
-// @title Banking App
-// @version 1.0
-// @description API Server for Mock Banking Application
+//	@title			Mock Banking Application API
+//	@version		1.0
+//	@description	API Server for Mock Banking Application
 
-// @host localhost:8080
-// @BasePath /
+//	@host		localhost:8080
+//	@BasePath	/api
 
-// @securityDefinition.apikey ApiKeyAuth
-// @in header
-// @name Authorization
+//	@securityDefinition.apikey	ApiKeyAuth
+//	@in							header
+//	@name						Authorization
 
 func main() {
 	if err := initConfig(); err != nil {
@@ -38,28 +44,39 @@ func main() {
 		Host:     viper.GetString("db.host"),
 		Port:     viper.GetString("db.port"),
 		Name:     viper.GetString("db.name"),
-		User:     viper.GetString("db.user"),
+		User:     os.Getenv("db_username"),
 		Password: os.Getenv("db_password"),
 	})
 	if err != nil {
 		log.Fatalf("cannot connect to database %s", err.Error())
 	}
 
-	repos := repository.NewRepository(db)
-	services := service.NewService(repos)
-	handlers := handler.NewHandler(services)
+	/*	err = db.AutoMigrate(&accountpg.PostgresAccount{}, &userpg.PostgresUser{}, &transferpg.PostgresTransfer{}, &depositpg.PostgresDeposit{})
+		if err != nil {
+			log.Fatalf("cannot auto migrate models %s", err.Error())
+		}*/
 
-	app := handlers.InitRoutes(fiber.Config{
-		WriteTimeout: 10 * time.Second,
-		ReadTimeout:  10 * time.Second,
+	userStoragePostgres := userpg.NewPostgresUserStorage(db)
+	accountStoragePostgres := accountpg.NewPostgresAccountStorage(db)
+	transferStoragePostgres := transferpg.NewPostgresTransferStorage(db, accountStoragePostgres)
+	depositStoragePostgres := depositpg.NewPostgresDepositStorage(db)
+
+	userService := user.NewUserService(userStoragePostgres, accountStoragePostgres)
+	accountService := account.NewAccountService(accountStoragePostgres)
+
+	depositService := deposit.NewDepositService(depositStoragePostgres)
+	transferService := transfer.NewTransferService(transferStoragePostgres, depositService, accountStoragePostgres, userService)
+	authService := auth.NewAuthService(userService)
+
+	httpHandler := handler.NewHttpHandler(userService, accountService, transferService, depositService, authService)
+
+	app := httpHandler.InitRoutes(&fiber.Config{
+		WriteTimeout: time.Duration(viper.GetInt("server.write_timeout")) * time.Second,
+		ReadTimeout:  time.Duration(viper.GetInt("server.read_timeout")) * time.Second,
 	})
 
-	if err = repos.MakeMigrations(db); err != nil {
-		log.Fatalf("cannot make migrations %s", err.Error())
-	}
-
-	if err = server.Run(viper.GetString("server.host"), viper.GetString("server.port"), app); err != nil {
-		log.Fatalf("cannot run server: %s", err.Error())
+	if err = app.Listen(viper.GetString("server.host") + ":" + viper.GetString("server.port")); err != nil {
+		log.Fatalf("cannot run a server: %v", err)
 	}
 }
 
